@@ -11,14 +11,64 @@ given piece of work.
 - Stat and progression system definitions
 - Open questions and decisions that need confirmation before moving to Design
 
+## Requesting a task
+
+Pick a path based on size — when in doubt, use the full path. A short
+planning doc is cheap; redoing an under-planned feature isn't.
+
+**Full path** — new feature, or any change to game mechanics/stats/systems,
+or a new screen:
+
+```
+## Feature request
+- Type: new feature | modify | remove
+- Name: <short name>
+- What: <1-2 sentence description of what should exist/change>
+- Why: <motivation, optional>
+```
+
+This creates `docs/planning/<slug>.md` (see template below), then flows
+through Design → Coding → Review → Testing → Deployment.
+
+**Lightweight path** — a bug fix, copy change, or small single-purpose tweak
+that doesn't touch game mechanics or add scope:
+
+```
+## Quick request
+- What: <description of the small change>
+```
+
+No planning/design doc gets created — this goes straight to Coding under
+the usual `AGENTS.md` conventions, with the git commit as the only record.
+
 ## Doc template
 
-Each planning doc should cover:
+Each planning doc lives at `docs/planning/<slug>.md`, where `<slug>` is a
+kebab-case short name for the feature (e.g. `cat-feeding.md`). It opens with
+status metadata, since a fresh session or subagent dispatch has no memory of
+prior conversation — this is the only place a feature's progress is
+tracked:
+
+```
+---
+status: planning   # planning | design | coding | review | testing | deployed
+updated: YYYY-MM-DD
+---
+```
+
+Followed by:
 
 1. **Goal** — what problem this feature/system solves for the player
 2. **Scope** — what's in, what's explicitly out
 3. **Mechanics** — how it works, with enough detail to hand to Design/Coding
 4. **Open questions** — anything not yet confirmed
+
+## Status tracking
+
+Update the `status` field in `docs/planning/<slug>.md` at each stage
+transition: `planning` → `design` → `coding` → `review` → `testing` →
+`deployed`. Design and coding work reference this doc rather than tracking
+status anywhere else.
 
 ## Next stage
 

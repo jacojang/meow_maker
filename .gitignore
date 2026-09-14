@@ -216,3 +216,7 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# web/ (Vite + Phaser frontend)
+web/node_modules/
+web/dist/

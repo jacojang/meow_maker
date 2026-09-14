@@ -42,6 +42,11 @@ Each stage has a matching folder under `docs/` that holds its artifacts and
 process notes. Start any task by identifying which stage it belongs to and
 reading that folder first. See `docs/README.md` for the full index.
 
+**Starting a new feature or change?** See
+`docs/planning/README.md#requesting-a-task` for the request format (full
+vs. lightweight path) and how per-feature status gets tracked in
+`docs/planning/<slug>.md`.
+
 ## Conventions
 
 - Don't guess. If a requirement, design detail, or technical choice is
@@ -75,8 +80,10 @@ reading that folder first. See `docs/README.md` for the full index.
 
 ## Commands
 
-Not yet defined — `server/` and `web/` don't exist yet. This section gets
-filled in as each is scaffolded (see `docs/development/README.md`).
+- `server/`: `cd server && uv sync` (install), `uv run uvicorn app.main:app --reload --port 8000` (run)
+- `web/`: `cd web && npm install` (install), `npm run dev` (local dev server), `npm run build` (produces `web/dist`, served by `server/`)
+
+See `docs/development/README.md` for details.
 
 ## Reference docs (read only when relevant)
 

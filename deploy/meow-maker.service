@@ -1,0 +1,20 @@
+# systemd unit template for Meow Maker.
+#
+# Placeholder paths — adjust to match the real deployment location, then
+# install with:
+#   sudo cp deploy/meow-maker.service /etc/systemd/system/
+#   sudo systemctl enable meow-maker
+
+[Unit]
+Description=Meow Maker FastAPI server
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/opt/meow-maker/server
+ExecStart=/home/ubuntu/.local/bin/uv run uvicorn app.main:app --host 0.0.0.0 --port 8000
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
