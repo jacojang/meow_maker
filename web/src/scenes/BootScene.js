@@ -5,7 +5,11 @@ export class BootScene extends Phaser.Scene {
     super('BootScene');
   }
 
+  preload() {
+    this.load.image('opening-bg', 'assets/opening-background.jpg');
+  }
+
   create() {
-    this.cameras.main.setBackgroundColor('#1a1a2e');
+    this.scene.start('OpeningScene');
   }
 }

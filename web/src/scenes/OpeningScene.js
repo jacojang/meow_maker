@@ -1,0 +1,51 @@
+import Phaser from 'phaser';
+
+const CANVAS_WIDTH = 960;
+const CANVAS_HEIGHT = 600;
+
+export class OpeningScene extends Phaser.Scene {
+  constructor() {
+    super('OpeningScene');
+  }
+
+  create() {
+    const bg = this.add.image(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, 'opening-bg');
+    const coverScale = Math.max(
+      CANVAS_WIDTH / bg.width,
+      CANVAS_HEIGHT / bg.height
+    );
+    bg.setScale(coverScale);
+
+    this.add
+      .text(CANVAS_WIDTH / 2, CANVAS_HEIGHT * 0.15, 'Meow Maker', {
+        fontFamily: 'sans-serif',
+        fontSize: '64px',
+        fontStyle: 'bold',
+        color: '#ffffff',
+        stroke: '#1a1a2e',
+        strokeThickness: 8,
+      })
+      .setOrigin(0.5);
+
+    const buttonX = CANVAS_WIDTH / 2;
+    const buttonY = CANVAS_HEIGHT * 0.9;
+
+    const buttonBg = this.add
+      .rectangle(buttonX, buttonY, 200, 56, 0x1a1a2e, 0.75)
+      .setStrokeStyle(2, 0xffffff, 0.8);
+
+    this.add
+      .text(buttonX, buttonY, '시작', {
+        fontFamily: 'sans-serif',
+        fontSize: '32px',
+        fontStyle: 'bold',
+        color: '#ffffff',
+      })
+      .setOrigin(0.5);
+
+    buttonBg.setInteractive({ useHandCursor: true });
+    buttonBg.on('pointerover', () => buttonBg.setFillStyle(0x1a1a2e, 0.95));
+    buttonBg.on('pointerout', () => buttonBg.setFillStyle(0x1a1a2e, 0.75));
+    buttonBg.on('pointerdown', () => {});
+  }
+}

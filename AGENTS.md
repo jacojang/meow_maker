@@ -26,6 +26,8 @@ meow_maker/
 ├── README.md
 ├── docs/            # workflow docs, one folder per stage — see docs/README.md
 ├── deploy/          # deploy script + systemd unit (see docs/deployment/)
+├── tools/           # dev-time tools, not part of the shipped game
+│   └── asset-gen/   # generates game art via the OpenAI Images API
 ├── server/          # FastAPI backend, uv-managed
 │   ├── app/         # app.main:app — /health + static-serves web/dist at /
 │   └── tests/       # pytest
@@ -84,6 +86,8 @@ vs. lightweight path) and how per-feature status gets tracked in
   first.
 - Don't hand-edit generated/build output (`web/dist/`, `server/.venv/`,
   `web/node_modules/`) — regenerate it via the Commands below instead.
+- Never run `tools/asset-gen` without confirming with the user first — it
+  costs real money per call.
 - No database exists yet, so no migration boundary applies — add one here
   when a DB is introduced.
 
