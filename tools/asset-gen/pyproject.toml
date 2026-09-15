@@ -1,0 +1,12 @@
+[project]
+name = "meow-maker-asset-gen"
+version = "0.1.0"
+description = "Dev-time tool: generate composited game art via the OpenAI Images API"
+requires-python = ">=3.12"
+dependencies = [
+    "openai>=1.50",
+    "python-dotenv>=1.0",
+]
+
+[tool.uv]
+package = false

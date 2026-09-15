@@ -35,6 +35,13 @@ For day-to-day frontend work, use `npm run dev`. For `server/` to serve the
 real frontend (e.g. to check the full integrated app), run `npm run build`
 first so `web/dist` exists, then start/restart the server.
 
+### `tools/asset-gen/` (dev-only, generates game art)
+
+Not part of the shipped game — see `tools/asset-gen/README.md` for setup
+(needs an `OPENAI_API_KEY` in a local `.env`) and usage. Costs money per
+call; never run it without the user's confirmation (see `AGENTS.md`
+Boundaries).
+
 ## Next stage
 
 Once a change is implemented, it hands off to [`../review/`](../review/README.md).
