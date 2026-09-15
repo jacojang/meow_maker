@@ -25,12 +25,18 @@ meow_maker/
 ├── AGENTS.md
 ├── README.md
 ├── docs/            # workflow docs, one folder per stage — see docs/README.md
-├── server/          # FastAPI backend (not yet scaffolded)
-└── web/             # Phaser 3 frontend (not yet scaffolded)
+├── deploy/          # deploy script + systemd unit (see docs/deployment/)
+├── server/          # FastAPI backend, uv-managed
+│   ├── app/         # app.main:app — /health + static-serves web/dist at /
+│   └── tests/       # pytest
+└── web/             # Phaser 3 + Vite frontend, npm-managed
+    └── src/
+        ├── main.js         # Phaser.Game setup
+        └── scenes/         # BootScene, etc.
 ```
 
-`server/` and `web/` don't exist yet. They get scaffolded during the Coding
-stage; see `docs/development/README.md` when that work starts.
+`server/` serves `web/dist`, so `web/` must be built (`npm run build`)
+before `server/` has a real frontend to serve — see Commands below.
 
 ## Development workflow
 
@@ -62,9 +68,10 @@ vs. lightweight path) and how per-feature status gets tracked in
 
 ## Testing
 
-- New features require a matching test once `server/`/`web/` have test
-  tooling in place (backend: `pytest`; frontend: TBD, see
-  `docs/testing/README.md`).
+- Backend: `cd server && uv run pytest`. New backend features require a
+  matching test in `server/tests/`.
+- Frontend: no test framework yet (see `docs/testing/README.md`) — `npm run
+  build` succeeding is the current bar for frontend changes.
 - Test code is never modified just to make it pass — fix the source instead
   (see Conventions above).
 
@@ -75,13 +82,23 @@ vs. lightweight path) and how per-feature status gets tracked in
 - Never run destructive or state-changing AWS/EC2 commands (deploy, restart,
   terminate, security group/config changes) without confirming with the user
   first.
-- More specific off-limits paths (generated code, migrations, etc.) get
-  added here once `server/` and `web/` exist and those concepts apply.
+- Don't hand-edit generated/build output (`web/dist/`, `server/.venv/`,
+  `web/node_modules/`) — regenerate it via the Commands below instead.
+- No database exists yet, so no migration boundary applies — add one here
+  when a DB is introduced.
 
 ## Commands
 
-- `server/`: `cd server && uv sync` (install), `uv run uvicorn app.main:app --reload --port 8000` (run)
-- `web/`: `cd web && npm install` (install), `npm run dev` (local dev server), `npm run build` (produces `web/dist`, served by `server/`)
+- `web/`: `cd web && npm install` (install), `npm run dev` (local dev
+  server, hot reload), `npm run build` (produces `web/dist`, served by
+  `server/`)
+- `server/`: `cd server && uv sync` (install), `uv run uvicorn app.main:app
+  --reload --port 8000` (run)
+
+To see the real integrated app (not just the Vite dev server), build `web/`
+before starting `server/` — `server/` reads `web/dist` at request time, not
+at startup, so rebuilding and hitting reload is enough during dev. Verify
+it's up with `curl http://localhost:8000/health` → `{"status":"ok"}`.
 
 See `docs/development/README.md` for details.
 
