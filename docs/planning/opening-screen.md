@@ -1,5 +1,5 @@
 ---
-status: testing
+status: deployed
 updated: 2026-09-16
 ---
 
@@ -79,3 +79,9 @@ white "시작" text at 85% down sat directly on the cat's white fur and was
 essentially unreadable. Fixed by giving the button a dark semi-transparent
 pill background (see `docs/design/opening-screen.md`) and moved to 90%
 down; re-verified in the browser after the fix.
+
+Merged to `main` and deployed to the real EC2 instance on 2026-09-16 via
+`deploy/deploy.sh`. Confirmed live at `http://54.116.51.0:8000` — verified
+both by `curl` (`/` and `/assets/opening-background.jpg` both 200) and by
+opening it in an actual browser (title, background and Start button all
+render correctly).
