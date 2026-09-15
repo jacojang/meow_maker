@@ -67,9 +67,15 @@ little sky at the top for the title). Saved as
 `docs/design/opening-screen.md`.
 
 `BootScene`/`OpeningScene`/`main.js` implemented (coding-agent/review-agent,
-PASS on first pass). Testing done: `npm run build` succeeds, and a manual
+PASS on first pass). Testing done: `npm run build` succeeds, a manual
 integration check against the real `server/` confirmed `/` returns 200 and
 `/assets/opening-background.jpg` is served correctly (200, `image/jpeg`,
-541066 bytes). Not yet checked in an actual browser — no browser automation
-was used, so the canvas render, text legibility and button hover haven't
-been visually confirmed.
+541066 bytes), and a real-browser check (Chrome via `npm run dev`) rendered
+the scene and exercised the Start button (hover state visible, click
+confirmed as a true no-op with no console errors).
+
+The browser check caught a real bug the automated review missed: plain
+white "시작" text at 85% down sat directly on the cat's white fur and was
+essentially unreadable. Fixed by giving the button a dark semi-transparent
+pill background (see `docs/design/opening-screen.md`) and moved to 90%
+down; re-verified in the browser after the fix.

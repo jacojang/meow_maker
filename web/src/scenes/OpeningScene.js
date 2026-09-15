@@ -27,20 +27,25 @@ export class OpeningScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
-    const startButton = this.add
-      .text(CANVAS_WIDTH / 2, CANVAS_HEIGHT * 0.85, '시작', {
+    const buttonX = CANVAS_WIDTH / 2;
+    const buttonY = CANVAS_HEIGHT * 0.9;
+
+    const buttonBg = this.add
+      .rectangle(buttonX, buttonY, 200, 56, 0x1a1a2e, 0.75)
+      .setStrokeStyle(2, 0xffffff, 0.8);
+
+    this.add
+      .text(buttonX, buttonY, '시작', {
         fontFamily: 'sans-serif',
-        fontSize: '40px',
+        fontSize: '32px',
         fontStyle: 'bold',
         color: '#ffffff',
-        stroke: '#1a1a2e',
-        strokeThickness: 6,
       })
-      .setOrigin(0.5)
-      .setInteractive({ useHandCursor: true });
+      .setOrigin(0.5);
 
-    startButton.on('pointerover', () => startButton.setColor('#ffd166'));
-    startButton.on('pointerout', () => startButton.setColor('#ffffff'));
-    startButton.on('pointerdown', () => {});
+    buttonBg.setInteractive({ useHandCursor: true });
+    buttonBg.on('pointerover', () => buttonBg.setFillStyle(0x1a1a2e, 0.95));
+    buttonBg.on('pointerout', () => buttonBg.setFillStyle(0x1a1a2e, 0.75));
+    buttonBg.on('pointerdown', () => {});
   }
 }
