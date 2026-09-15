@@ -1,5 +1,5 @@
 ---
-status: coding
+status: testing
 updated: 2026-09-16
 ---
 
@@ -64,4 +64,12 @@ from `background_02.png` + `mom_of_cats_01.png` + `cat_mimi_01.png`),
 reviewed and approved 2026-09-16 on the second attempt (first draft had too
 little sky at the top for the title). Saved as
 `web/public/assets/opening-background.jpg`. Design spec written — see
-`docs/design/opening-screen.md`. Proceeding to Coding.
+`docs/design/opening-screen.md`.
+
+`BootScene`/`OpeningScene`/`main.js` implemented (coding-agent/review-agent,
+PASS on first pass). Testing done: `npm run build` succeeds, and a manual
+integration check against the real `server/` confirmed `/` returns 200 and
+`/assets/opening-background.jpg` is served correctly (200, `image/jpeg`,
+541066 bytes). Not yet checked in an actual browser — no browser automation
+was used, so the canvas render, text legibility and button hover haven't
+been visually confirmed.
