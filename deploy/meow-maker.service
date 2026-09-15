@@ -1,8 +1,9 @@
-# systemd unit template for Meow Maker.
+# systemd unit for Meow Maker on the Amazon Linux 2023 EC2 instance.
 #
-# Placeholder paths — adjust to match the real deployment location, then
-# install with:
+# Installed by deploy/setup-instance.sh to /etc/systemd/system/. To reinstall
+# manually:
 #   sudo cp deploy/meow-maker.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
 #   sudo systemctl enable meow-maker
 
 [Unit]
@@ -11,9 +12,9 @@ After=network.target
 
 [Service]
 Type=simple
-User=ubuntu
-WorkingDirectory=/opt/meow-maker/server
-ExecStart=/home/ubuntu/.local/bin/uv run uvicorn app.main:app --host 0.0.0.0 --port 8000
+User=ec2-user
+WorkingDirectory=/home/ec2-user/meow-maker/server
+ExecStart=/home/ec2-user/.local/bin/uv run uvicorn app.main:app --host 0.0.0.0 --port 8000
 Restart=on-failure
 
 [Install]

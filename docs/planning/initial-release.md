@@ -64,8 +64,11 @@ all PASS on first pass — no retries needed). Testing done: `uv run pytest`
 (2 passed), `npm run build` succeeds, and a manual smoke run confirmed
 `/health` returns `{"status": "ok"}` and `/` serves the built Phaser page.
 
-Deployment scripts/runbook are prepared (`deploy/deploy.sh`,
-`deploy/meow-maker.service`, `docs/deployment/README.md`) but **not
-executed** — no real EC2 instance exists. Actually provisioning and
-deploying is a separate follow-up requiring its own explicit confirmation
-before any AWS state-changing action.
+A real EC2 instance (Amazon Linux 2023, t3.micro) is running and targeted
+for this release. Deployment scripts/runbook are updated for its actual
+environment (`deploy/setup-instance.sh`, `deploy/deploy.sh`,
+`deploy/meow-maker.service`, `docs/deployment/README.md` — see that doc for
+why the frontend is built locally rather than on the instance), reviewed
+and passed, but **not yet executed** against the instance. Running them is
+a separate step requiring its own explicit confirmation before any AWS
+state-changing action, per `AGENTS.md` Boundaries.
