@@ -11,6 +11,16 @@ given piece of work.
 - Stat and progression system definitions
 - Open questions and decisions that need confirmation before moving to Design
 
+## Reference material
+
+Meow Maker is modeled on *Princess Maker 2*. Before writing or changing a
+planning doc for a game feature, check how PM2 handled the same area in
+[`references/princess-maker-2/`](references/princess-maker-2/README.md) —
+start with its README and read only the topic files you need (raising
+system, status system, mini-games, characters/layout, endings). When a
+planning doc borrows from or intentionally departs from PM2, say so in its
+Mechanics section.
+
 ## Requesting a task
 
 Pick a path based on size — when in doubt, use the full path. A short
