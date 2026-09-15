@@ -83,7 +83,10 @@ Observations about PM2's design, for discussion — not decisions:
   and some pages disagree with each other; conflicts are called out inline
   where found.
 - Wiki images (UI screenshots, sprites) couldn't be retrieved — the image CDN
-  rejects non-browser requests — so layout notes are from the wiki's text
-  descriptions only.
+  rejects non-browser requests. Layout notes instead combine the wiki's text
+  with Regeneration (2024 remake, Korean Switch version) screenshots from
+  [this Naver blog post](https://m.blog.naver.com/114632/223503790979),
+  viewed 2026-09-15. Those images aren't stored in the repo (third-party
+  copyrighted material).
 - The wiki has no dedicated page for errantry controls or the battle screen;
   that section is assembled from scattered mentions and is incomplete.
