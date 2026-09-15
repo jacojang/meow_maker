@@ -1,5 +1,5 @@
 ---
-status: planning
+status: coding
 updated: 2026-09-16
 ---
 
@@ -59,6 +59,9 @@ account, and it would need an IAM/model-access change either way), and
 
 ## Next stage
 
-Needs a Design pass to pin down the exact visual spec (title text/font
-treatment, button style, where the characters are positioned in the
-composited scene) before Coding. See `docs/design/opening-screen.md`.
+Background generated via `tools/asset-gen` (OpenAI `gpt-image-1`, composited
+from `background_02.png` + `mom_of_cats_01.png` + `cat_mimi_01.png`),
+reviewed and approved 2026-09-16 on the second attempt (first draft had too
+little sky at the top for the title). Saved as
+`web/public/assets/opening-background.jpg`. Design spec written — see
+`docs/design/opening-screen.md`. Proceeding to Coding.
