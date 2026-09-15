@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { coverScale } from '../utils/coverScale.js';
 
 const CANVAS_WIDTH = 960;
 const CANVAS_HEIGHT = 600;
@@ -10,11 +11,7 @@ export class OpeningScene extends Phaser.Scene {
 
   create() {
     const bg = this.add.image(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, 'opening-bg');
-    const coverScale = Math.max(
-      CANVAS_WIDTH / bg.width,
-      CANVAS_HEIGHT / bg.height
-    );
-    bg.setScale(coverScale);
+    bg.setScale(coverScale(CANVAS_WIDTH, CANVAS_HEIGHT, bg.width, bg.height));
 
     this.add
       .text(CANVAS_WIDTH / 2, CANVAS_HEIGHT * 0.15, 'Meow Maker', {

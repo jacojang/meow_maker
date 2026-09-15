@@ -29,6 +29,7 @@ cd web
 npm install
 npm run dev     # local dev server with hot reload, not served by server/
 npm run build   # produces web/dist, which server/ serves as static files
+npm test        # runs the Vitest suite (web/src/utils/**/*.test.js)
 ```
 
 For day-to-day frontend work, use `npm run dev`. For `server/` to serve the

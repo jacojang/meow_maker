@@ -72,8 +72,11 @@ vs. lightweight path) and how per-feature status gets tracked in
 
 - Backend: `cd server && uv run pytest`. New backend features require a
   matching test in `server/tests/`.
-- Frontend: no test framework yet (see `docs/testing/README.md`) — `npm run
-  build` succeeding is the current bar for frontend changes.
+- Frontend: `cd web && npm test` (Vitest). New frontend logic worth unit
+  testing should live in a plain, Phaser-free module under `web/src/utils/`
+  so it can be tested without a browser/canvas — see `coverScale.js` for
+  the pattern. Phaser scene wiring itself isn't unit tested; `npm run
+  build` plus a manual browser check is still the bar for that.
 - Test code is never modified just to make it pass — fix the source instead
   (see Conventions above).
 
@@ -95,7 +98,7 @@ vs. lightweight path) and how per-feature status gets tracked in
 
 - `web/`: `cd web && npm install` (install), `npm run dev` (local dev
   server, hot reload), `npm run build` (produces `web/dist`, served by
-  `server/`)
+  `server/`), `npm test` (Vitest, see Testing above)
 - `server/`: `cd server && uv sync` (install), `uv run uvicorn app.main:app
   --reload --port 8000` (run)
 

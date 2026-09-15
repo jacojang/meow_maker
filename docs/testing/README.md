@@ -4,15 +4,18 @@ Verifies a change before deployment.
 
 ## What goes here
 
-- Test strategy (backend: `pytest`; frontend: TBD once `web/` exists)
+- Test strategy (backend: `pytest`; frontend: `Vitest`)
 - Test plans for larger features
 - Manual QA checklists for things automated tests can't cover well (game
   feel, animation timing, visual correctness)
 
 ## Status
 
-No test suite exists yet — this fills in as `server/` and `web/` are
-scaffolded.
+- Backend: `cd server && uv run pytest`.
+- Frontend: `cd web && npm test` (Vitest). Only plain JS logic extracted
+  into `web/src/utils/` is unit tested this way (e.g. `coverScale.js`) —
+  Phaser scenes themselves need a browser/canvas, so those are checked with
+  `npm run build` plus a manual browser pass, not an automated suite.
 
 ## Next stage
 
