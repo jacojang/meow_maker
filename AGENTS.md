@@ -107,5 +107,8 @@ See `docs/development/README.md` for details.
 - Workflow stage docs — read only the folder matching the current task:
   `docs/planning/`, `docs/design/`, `docs/development/`, `docs/review/`,
   `docs/testing/`, `docs/deployment/`
+- Princess Maker 2 reference (the game Meow Maker is modeled on) — read its
+  index before any Planning or Design work on a game feature, then only the
+  relevant topic files: `docs/planning/references/princess-maker-2/README.md`
 - Dynamic coding↔review subagent loop protocol — only relevant when running
   the `coding-agent`/`review-agent` loop: `docs/development/dynamic-workflow.md`
