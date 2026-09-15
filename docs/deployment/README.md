@@ -64,12 +64,18 @@ Run, locally, after the one-time setup has been done: `deploy/deploy.sh`. It:
 
 ## Status
 
-`deploy/setup-instance.sh`, `deploy/deploy.sh`, and
-`deploy/meow-maker.service` are authored and reflect the real instance, but
-have not yet been executed — running them is a separate follow-up step for
-a human/orchestrator to trigger explicitly (per `AGENTS.md` Boundaries on
-state-changing AWS actions). Update this section with what was actually run
-once that happens.
+Deployed successfully on 2026-09-15. `meow-maker.service` is `active` and
+`enabled` (survives reboot); `/health` and `/` both verified over HTTP
+against the real instance.
+
+**Known shared-instance gotcha**: this instance also hosts an unrelated
+project, `jaco_ai_testbed/leaderboard` (run manually, not via systemd —
+`ps -fp $(pgrep -f leaderboard)` to check), which was *also* bound to
+`127.0.0.1:8000`. On first deploy this collided with `meow-maker` and had
+to be stopped (with the user's explicit confirmation) before
+`meow-maker.service` could bind port 8000. If that project needs to run
+again on this instance, it needs a different port — check
+`sudo ss -ltnp | grep 8000` before restarting anything on this box.
 
 ## Next stage
 

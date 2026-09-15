@@ -1,6 +1,6 @@
 ---
-status: testing
-updated: 2026-09-14
+status: deployed
+updated: 2026-09-15
 ---
 
 # Initial Release — Empty Skeleton
@@ -64,11 +64,15 @@ all PASS on first pass — no retries needed). Testing done: `uv run pytest`
 (2 passed), `npm run build` succeeds, and a manual smoke run confirmed
 `/health` returns `{"status": "ok"}` and `/` serves the built Phaser page.
 
-A real EC2 instance (Amazon Linux 2023, t3.micro) is running and targeted
-for this release. Deployment scripts/runbook are updated for its actual
-environment (`deploy/setup-instance.sh`, `deploy/deploy.sh`,
-`deploy/meow-maker.service`, `docs/deployment/README.md` — see that doc for
-why the frontend is built locally rather than on the instance), reviewed
-and passed, but **not yet executed** against the instance. Running them is
-a separate step requiring its own explicit confirmation before any AWS
-state-changing action, per `AGENTS.md` Boundaries.
+Deployed successfully on 2026-09-15 to the real instance (Amazon Linux
+2023, t3.micro, `54.116.51.0`) with the user's explicit go-ahead:
+`deploy/setup-instance.sh` then `deploy/deploy.sh`. Verified with
+`systemctl is-active`/`is-enabled` (both healthy) and `curl` against both
+`/health` and `/`.
+
+One real-world snag, resolved: port 8000 was already in use by an
+unrelated pre-existing process on the instance (`jaco_ai_testbed/leaderboard`,
+not managed by systemd/cron). Per the user's explicit choice, that process
+was stopped rather than moving `meow-maker` to a different port. See
+`docs/deployment/README.md` for the note this leaves for future deploys to
+this shared instance.
