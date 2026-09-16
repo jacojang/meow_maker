@@ -11,6 +11,14 @@ given piece of work.
 - Stat and progression system definitions
 - Open questions and decisions that need confirmation before moving to Design
 
+## Roadmap
+
+[`roadmap.md`](roadmap.md) is the multi-phase plan for building the game
+itself, plus the decisions that span all of it (server-authoritative rules,
+run length, when SQLite arrives, how accounts get added later). Each phase
+there becomes its own `docs/planning/<slug>.md` when it's started — the
+roadmap is the map, those are the specs.
+
 ## Reference material
 
 Meow Maker is modeled on *Princess Maker 2*. Before writing or changing a
