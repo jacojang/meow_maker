@@ -24,9 +24,13 @@ Pure Python. No HTTP, no DB, no Phaser.
 - Cat stats, calendar (month + 3 slots), a few activities, stress.
 - Applying an activity produces stat deltas; advancing a month resolves them.
 - Stress crossing a threshold sets a "sick" state.
-- **Seed the RNG from the start** so tests are deterministic later.
-- Keep saving behind a repository interface (in-memory implementation for
-  now) so Phase 2 swaps the implementation, not the callers.
+- Make run state serializable to and from a plain dict — that's what both
+  the in-memory store (Phase 1) and SQLite (Phase 2) actually need.
+- No RNG and no repository interface yet: nothing in this phase has a use
+  for either. The rules that matter are conventions, applied when they
+  first get a caller — inject a `Random` rather than calling module-level
+  `random` (Phase 4), and put a repository interface in front of storage
+  when storage appears (Phase 1).
 
 **Tested by**: `pytest` only. Every rule.
 **Done when**: a test can simulate a full 12-month run end to end.
