@@ -59,8 +59,8 @@ export class GameScene extends Phaser.Scene {
 
   init(data) {
     this.state = data?.state ?? null;
-    this.activities = [];
-    this.picks = [];
+    this.activities = data?.activities ?? [];
+    this.picks = this.defaultPicks();
     this.deltas = [];
     this.hasPlayedMonth = false;
     this.message = '';
@@ -68,10 +68,17 @@ export class GameScene extends Phaser.Scene {
   }
 
   create() {
+    this.alive = true;
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.alive = false;
+    });
+    this.events.once(Phaser.Scenes.Events.DESTROY, () => {
+      this.alive = false;
+    });
+
     this.drawBackground();
     this.ui = this.add.container(0, 0);
     this.render();
-    this.loadActivities();
   }
 
   drawBackground() {
@@ -84,16 +91,6 @@ export class GameScene extends Phaser.Scene {
       .setOrigin(0, 0);
   }
 
-  async loadActivities() {
-    try {
-      this.activities = await this.api.listActivities();
-      this.picks = this.defaultPicks();
-    } catch (error) {
-      this.message = `활동 목록을 불러오지 못했습니다. ${describeError(error)}`;
-    }
-    this.safeRender();
-  }
-
   defaultPicks() {
     const slots = this.state?.slots_per_month ?? 3;
     const first = this.activities[0]?.id;
@@ -101,7 +98,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   safeRender() {
-    if (!this.scene.isActive()) return;
+    if (!this.alive) return;
     this.render();
   }
 
