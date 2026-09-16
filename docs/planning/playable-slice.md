@@ -95,3 +95,20 @@ A browser pass also caught two copy bugs: the end-of-run heading read like
 the cat had died, and "아직 보낸 달이 없습니다" showed after months that
 simply produced no stat change.
 
+Then the deploy caught a third, worse one that every local check had
+missed. `GameScene` used to render immediately and fetch its activity list
+afterwards, re-rendering when it arrived — and that re-render was gated on
+`this.scene.isActive()`. Against a remote server the list arrived late
+enough that the gate rejected it, so the game screen came up with no
+activity pickers at all: unplayable. It passed locally because the Vite dev
+server and localhost are fast enough to win the race.
+
+Fixed structurally rather than by loosening the gate: `OpeningScene` now
+fetches the run and the activity list together and hands both to
+`GameScene`, which therefore cannot exist without them. Verified by
+injecting a 900ms delay into every API call — the old build breaks under
+it, the new one doesn't.
+
+Lesson for later phases: a scene that renders before its data arrives can
+always lose that race. Fetch first, then start the scene.
+
