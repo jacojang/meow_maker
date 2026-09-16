@@ -23,6 +23,7 @@ def test_to_dict_is_plain_json_safe_data():
             "affection": 20,
             "discipline": 10,
             "curiosity": 30,
+            "refinement": 10,
             "stress": 40,
         },
         "month": 4,

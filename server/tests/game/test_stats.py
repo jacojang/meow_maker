@@ -11,6 +11,7 @@ def test_default_stats_are_the_starting_values():
         "affection": 20,
         "discipline": 10,
         "curiosity": 30,
+        "refinement": 10,
         "stress": 0,
     }
 
@@ -76,7 +77,9 @@ def test_is_sick_only_once_stress_exceeds_health():
 
 
 def test_stats_round_trip_through_dict():
-    stats = CatStats(health=61, affection=12, discipline=99, curiosity=3, stress=44)
+    stats = CatStats(
+        health=61, affection=12, discipline=99, curiosity=3, refinement=7, stress=44
+    )
 
     assert CatStats.from_dict(stats.to_dict()) == stats
 

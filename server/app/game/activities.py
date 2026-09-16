@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from collections.abc import Mapping
 from enum import Enum
 from types import MappingProxyType
@@ -12,16 +13,24 @@ class Activity(str, Enum):
     TRAIN = "train"
     GROOM = "groom"
     REST = "rest"
+    EDUCATE = "educate"
 
 
 ACTIVITY_EFFECTS: Mapping[Activity, Mapping[str, int]] = MappingProxyType(
     {
-        Activity.PLAY: MappingProxyType({"affection": 4, "curiosity": 3, "stress": 12}),
+        Activity.PLAY: MappingProxyType(
+            {"affection": 4, "curiosity": 3, "refinement": -2, "stress": 12}
+        ),
         Activity.TRAIN: MappingProxyType({"discipline": 5, "stress": 8}),
         Activity.GROOM: MappingProxyType({"affection": 3, "health": 1, "stress": 3}),
         Activity.REST: MappingProxyType({"stress": -20}),
+        Activity.EDUCATE: MappingProxyType({"refinement": 5, "stress": 8}),
     }
 )
+
+
+def _halve_toward_zero(value: int) -> int:
+    return math.trunc(value / 2)
 
 
 def effects_for(activity: Activity, *, sick: bool) -> dict[str, int]:
@@ -29,7 +38,7 @@ def effects_for(activity: Activity, *, sick: bool) -> dict[str, int]:
     if not sick:
         return dict(effects)
     return {
-        name: value if name == "stress" else value // 2
+        name: value if name == "stress" else _halve_toward_zero(value)
         for name, value in effects.items()
     }
 

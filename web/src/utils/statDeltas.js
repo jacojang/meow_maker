@@ -1,4 +1,4 @@
-export const STAT_NAMES = ['health', 'affection', 'discipline', 'curiosity', 'stress'];
+export const STAT_NAMES = ['health', 'affection', 'discipline', 'curiosity', 'refinement', 'stress'];
 
 export function statDeltas(before, after) {
   if (!before || !after) return [];

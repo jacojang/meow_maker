@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { coverScale } from '../utils/coverScale.js';
 import { gameApi } from '../utils/gameApi.js';
+import { fitStep } from '../utils/layout.js';
 import { STAT_NAMES, formatDelta, statDeltas } from '../utils/statDeltas.js';
 
 const CANVAS_WIDTH = 960;
@@ -23,6 +24,7 @@ const STAT_LABELS = {
   affection: '애정',
   discipline: '규율',
   curiosity: '호기심',
+  refinement: '기품',
   stress: '스트레스',
 };
 
@@ -31,6 +33,7 @@ const ACTIVITY_LABELS = {
   train: '훈련',
   groom: '단장',
   rest: '휴식',
+  educate: '교육',
 };
 
 function statLabel(stat) {
@@ -179,8 +182,9 @@ export class GameScene extends Phaser.Scene {
     this.panel(x, TOP_PANEL_Y, COLUMN_WIDTH, TOP_PANEL_HEIGHT);
     this.text(x + 16, TOP_PANEL_Y + 12, '능력치', { fontStyle: 'bold' });
 
+    const step = fitStep(STAT_NAMES.length, 30, TOP_PANEL_HEIGHT - 58);
     STAT_NAMES.forEach((stat, index) => {
-      const y = TOP_PANEL_Y + 48 + index * 30;
+      const y = TOP_PANEL_Y + 48 + index * step;
       this.text(x + 16, y, statLabel(stat), { fontSize: '17px', color: '#cfd2e6' });
       this.text(x + COLUMN_WIDTH - 16, y, `${this.state.stats[stat]}`, {
         fontSize: '17px',
@@ -205,8 +209,9 @@ export class GameScene extends Phaser.Scene {
       return;
     }
 
+    const step = fitStep(this.deltas.length, 30, TOP_PANEL_HEIGHT - 58);
     this.deltas.forEach(({ stat, before, after, delta }, index) => {
-      const y = TOP_PANEL_Y + 48 + index * 30;
+      const y = TOP_PANEL_Y + 48 + index * step;
       this.text(x + 16, y, statLabel(stat), { fontSize: '17px', color: '#cfd2e6' });
       this.text(x + COLUMN_WIDTH - 16, y, `${before} → ${after} (${formatDelta(delta)})`, {
         fontSize: '17px',
@@ -221,14 +226,16 @@ export class GameScene extends Phaser.Scene {
     this.panel(x, TOP_PANEL_Y, COLUMN_WIDTH, TOP_PANEL_HEIGHT);
     this.text(x + 16, TOP_PANEL_Y + 12, '활동 효과', { fontStyle: 'bold' });
 
+    const step = fitStep(this.activities.length, 34, TOP_PANEL_HEIGHT - 56);
+    const effectOffset = Math.min(16, step - 12);
     this.activities.forEach((activity, index) => {
-      const y = TOP_PANEL_Y + 46 + index * 40;
+      const y = TOP_PANEL_Y + 44 + index * step;
       this.text(x + 16, y, activityLabel(activity.id), {
-        fontSize: '16px',
+        fontSize: '15px',
         color: '#ffd479',
       });
-      this.text(x + 16, y + 20, effectsSummary(activity.effects), {
-        fontSize: '13px',
+      this.text(x + 16, y + effectOffset, effectsSummary(activity.effects), {
+        fontSize: '12px',
         color: '#cfd2e6',
         wordWrap: { width: COLUMN_WIDTH - 32 },
       });
