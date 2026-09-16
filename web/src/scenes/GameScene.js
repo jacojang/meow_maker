@@ -3,6 +3,7 @@ import { coverScale } from '../utils/coverScale.js';
 import { gameApi } from '../utils/gameApi.js';
 import { fitStep } from '../utils/layout.js';
 import { STAT_NAMES, formatDelta, statDeltas } from '../utils/statDeltas.js';
+import { addFullscreenButton } from './fullscreenButton.js';
 
 const CANVAS_WIDTH = 960;
 const CANVAS_HEIGHT = 600;
@@ -82,6 +83,7 @@ export class GameScene extends Phaser.Scene {
     this.drawBackground();
     this.ui = this.add.container(0, 0);
     this.render();
+    addFullscreenButton(this);
   }
 
   drawBackground() {
