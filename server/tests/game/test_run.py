@@ -5,6 +5,7 @@ from app.game import (
     SLOTS_PER_MONTH,
     Activity,
     CatStats,
+    Diet,
     GameRun,
     IncompleteMonthError,
     RunFinishedError,
@@ -154,6 +155,70 @@ def test_advancing_past_the_end_is_rejected():
         run.assign_slot(0, Activity.REST)
 
 
+def test_new_run_defaults_to_the_normal_diet():
+    run = GameRun()
+
+    assert run.diet == Diet.NORMAL
+
+
+def test_assign_diet_changes_the_active_diet():
+    run = GameRun()
+
+    run.assign_diet(Diet.HEARTY)
+
+    assert run.diet == Diet.HEARTY
+
+
+def test_assign_diet_is_rejected_once_the_run_is_finished():
+    run = GameRun(month=MONTHS_PER_RUN)
+    play_month(run, Activity.REST, Activity.REST, Activity.REST)
+    assert run.finished is True
+
+    with pytest.raises(RunFinishedError):
+        run.assign_diet(Diet.LIGHT)
+
+
+def test_advance_month_applies_the_active_diet():
+    run = GameRun()
+
+    run.assign_diet(Diet.LIGHT)
+    play_month(run, Activity.REST, Activity.REST, Activity.REST)
+
+    assert run.stats.weight == 49
+
+
+def test_advance_month_increments_age_by_one_regardless_of_diet_or_activities():
+    run = GameRun()
+
+    run.assign_diet(Diet.HEARTY)
+    play_month(run, Activity.PLAY, Activity.TRAIN, Activity.REST)
+
+    assert run.stats.age == 2
+
+
+def test_age_clamps_at_the_ceiling():
+    run = GameRun(stats=CatStats(age=100))
+
+    play_month(run, Activity.REST, Activity.REST, Activity.REST)
+
+    assert run.stats.age == 100
+
+
+def test_diet_effects_are_not_halved_while_the_slot_effects_are():
+    run = GameRun(stats=CatStats(health=20, stress=40, weight=50))
+    assert run.is_sick
+
+    run.assign_diet(Diet.HEARTY)
+    play_month(run, Activity.TRAIN, Activity.TRAIN, Activity.TRAIN)
+
+    # TRAIN {"discipline": 5, "stress": 8}, halved for sickness except stress.
+    assert run.stats.discipline == 10 + 2 + 2 + 2
+    assert run.stats.stress == 40 + 8 + 8 + 8
+    # HEARTY {"weight": 3, "health": 1} applies at full strength despite sickness.
+    assert run.stats.weight == 50 + 3
+    assert run.stats.health == 20 + 1
+
+
 def test_run_rejects_an_impossible_month_or_slot_count():
     with pytest.raises(ValueError):
         GameRun(month=0)
@@ -185,5 +250,7 @@ def test_full_twelve_month_simulation():
         "discipline": 70,
         "curiosity": 48,
         "refinement": 0,
+        "age": 13,
+        "weight": 62,
         "stress": 0,
     }

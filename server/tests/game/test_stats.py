@@ -12,6 +12,8 @@ def test_default_stats_are_the_starting_values():
         "discipline": 10,
         "curiosity": 30,
         "refinement": 10,
+        "age": 1,
+        "weight": 50,
         "stress": 0,
     }
 

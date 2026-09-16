@@ -7,9 +7,11 @@ from pydantic import BaseModel
 
 from .game import (
     ACTIVITY_EFFECTS,
+    DIET_EFFECTS,
     MONTHS_PER_RUN,
     SLOTS_PER_MONTH,
     Activity,
+    Diet,
     GameRun,
     IncompleteMonthError,
     RunFinishedError,
@@ -22,6 +24,7 @@ router = APIRouter(prefix="/api")
 
 class AdvanceRequest(BaseModel):
     activities: list[str]
+    diet: str = Diet.NORMAL.value
 
 
 def _state(run: GameRun) -> dict[str, Any]:
@@ -67,11 +70,13 @@ def advance_game(
     run = _load_run(repository, player_id)
     try:
         activities = [Activity(name) for name in payload.activities]
+        diet = Diet(payload.diet)
     except ValueError as error:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, str(error)) from error
 
     try:
         run.assign_month(activities)
+        run.assign_diet(diet)
         run.advance_month()
     except RunFinishedError as error:
         raise HTTPException(status.HTTP_409_CONFLICT, str(error)) from error
@@ -88,5 +93,15 @@ def list_activities() -> dict[str, Any]:
         "activities": [
             {"id": activity.value, "effects": dict(effects)}
             for activity, effects in ACTIVITY_EFFECTS.items()
+        ]
+    }
+
+
+@router.get("/diets")
+def list_diets() -> dict[str, Any]:
+    return {
+        "diets": [
+            {"id": diet.value, "effects": dict(effects)}
+            for diet, effects in DIET_EFFECTS.items()
         ]
     }
