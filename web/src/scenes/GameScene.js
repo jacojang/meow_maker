@@ -184,15 +184,34 @@ export class GameScene extends Phaser.Scene {
     this.panel(x, TOP_PANEL_Y, COLUMN_WIDTH, TOP_PANEL_HEIGHT);
     this.text(x + 16, TOP_PANEL_Y + 12, '능력치', { fontStyle: 'bold' });
 
-    const step = fitStep(STAT_NAMES.length, 30, TOP_PANEL_HEIGHT - 58);
+    const step = fitStep(STAT_NAMES.length, 34, TOP_PANEL_HEIGHT - 58);
     STAT_NAMES.forEach((stat, index) => {
-      const y = TOP_PANEL_Y + 48 + index * step;
-      this.text(x + 16, y, statLabel(stat), { fontSize: '17px', color: '#cfd2e6' });
-      this.text(x + COLUMN_WIDTH - 16, y, `${this.state.stats[stat]}`, {
-        fontSize: '17px',
+      const y = TOP_PANEL_Y + 44 + index * step;
+      const value = this.state.stats[stat];
+      this.text(x + 16, y, statLabel(stat), { fontSize: '15px', color: '#cfd2e6' });
+      this.text(x + COLUMN_WIDTH - 16, y, `${value}`, {
+        fontSize: '15px',
         fontStyle: 'bold',
       }).setOrigin(1, 0);
+      this.statBar(
+        x + 16,
+        y + 18,
+        COLUMN_WIDTH - 32,
+        6,
+        value / 100,
+        stat === 'stress' ? 0xe05c5c : 0x4d9a6e,
+      );
     });
+  }
+
+  statBar(x, y, width, height, fraction, color) {
+    const clamped = Math.max(0, Math.min(1, fraction));
+    this.ui.add(this.add.rectangle(x, y, width, height, 0x2a2c48, 1).setOrigin(0, 0));
+    if (clamped > 0) {
+      this.ui.add(
+        this.add.rectangle(x, y, width * clamped, height, color, 1).setOrigin(0, 0),
+      );
+    }
   }
 
   renderLastMonth() {
