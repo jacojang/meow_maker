@@ -24,12 +24,10 @@ targeting `main` (and on push to `main`): `web/`'s `npm test` + `npm run
 build` first, then `server/`'s `pytest` against the built `web/dist`
 (passed between jobs as an artifact) — `server/`'s app fails to even import
 without `web/dist` present, so backend tests always run after a real
-frontend build, matching the actual deploy order. This makes a broken PR
-show a red check, but
-by itself doesn't stop it from being merged — that additionally requires a
-branch protection rule on `main` (GitHub repo Settings → Branches → require
-this status check) to be turned on. Check whether that's enabled before
-assuming a red check blocks the merge button.
+frontend build, matching the actual deploy order.
+
+Both jobs are required status checks on `main` (branch protection, admins
+included) — a failing PR genuinely cannot be merged, not just flagged.
 
 ## Next stage
 
