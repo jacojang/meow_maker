@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from .activities import Activity, apply_activity
+from .diet import Diet, apply_diet
 from .stats import CatStats
 
 MONTHS_PER_RUN = 12
@@ -35,6 +36,7 @@ class GameRun:
     month: int = FIRST_MONTH
     finished: bool = False
     slots: list[Activity | None] = field(default_factory=_empty_slots)
+    diet: Diet = Diet.NORMAL
 
     def __post_init__(self) -> None:
         if not FIRST_MONTH <= self.month <= MONTHS_PER_RUN:
@@ -60,6 +62,10 @@ class GameRun:
             )
         self.slots = [Activity(activity) for activity in activities]
 
+    def assign_diet(self, diet: Diet) -> None:
+        self._require_active()
+        self.diet = Diet(diet)
+
     def advance_month(self) -> None:
         self._require_active()
         if any(slot is None for slot in self.slots):
@@ -67,6 +73,9 @@ class GameRun:
 
         for activity in self.slots:
             self.stats = apply_activity(self.stats, activity)
+
+        self.stats = apply_diet(self.stats, self.diet)
+        self.stats = self.stats.apply({"age": 1})
 
         self.slots = _empty_slots()
         if self.month == MONTHS_PER_RUN:
@@ -84,11 +93,12 @@ class GameRun:
             "month": self.month,
             "finished": self.finished,
             "slots": [None if slot is None else slot.value for slot in self.slots],
+            "diet": self.diet.value,
         }
 
     @classmethod
     def from_dict(cls, data: Mapping[str, Any]) -> GameRun:
-        missing = sorted({"stats", "month", "finished", "slots"} - set(data))
+        missing = sorted({"stats", "month", "finished", "slots", "diet"} - set(data))
         if missing:
             raise ValueError(f"missing keys: {missing}")
         slots = data["slots"]
@@ -97,4 +107,5 @@ class GameRun:
             month=int(data["month"]),
             finished=bool(data["finished"]),
             slots=[None if slot is None else Activity(slot) for slot in slots],
+            diet=Diet(data["diet"]),
         )

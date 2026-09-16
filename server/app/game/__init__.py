@@ -1,4 +1,5 @@
 from .activities import ACTIVITY_EFFECTS, Activity, apply_activity, effects_for
+from .diet import DIET_EFFECTS, Diet, apply_diet
 from .run import (
     FIRST_MONTH,
     MONTHS_PER_RUN,
@@ -15,6 +16,9 @@ __all__ = [
     "Activity",
     "apply_activity",
     "effects_for",
+    "DIET_EFFECTS",
+    "Diet",
+    "apply_diet",
     "CatStats",
     "clamp",
     "STAT_NAMES",

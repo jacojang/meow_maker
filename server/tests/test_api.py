@@ -1,9 +1,11 @@
 from app.game import (
     ACTIVITY_EFFECTS,
+    DIET_EFFECTS,
     MONTHS_PER_RUN,
     SLOTS_PER_MONTH,
     Activity,
     CatStats,
+    Diet,
     apply_activity,
 )
 from app.session import SESSION_COOKIE_NAME
@@ -17,8 +19,11 @@ def start_run(client):
     return response.json()
 
 
-def advance(client, activities=A_MONTH):
-    return client.post("/api/game/advance", json={"activities": activities})
+def advance(client, activities=A_MONTH, diet=None):
+    body: dict[str, object] = {"activities": activities}
+    if diet is not None:
+        body["diet"] = diet
+    return client.post("/api/game/advance", json=body)
 
 
 def test_start_game_returns_a_fresh_run(client):
@@ -104,6 +109,8 @@ def test_advance_applies_every_activity_and_moves_to_the_next_month(client):
     expected = CatStats()
     for name in A_MONTH:
         expected = apply_activity(expected, Activity(name))
+    expected = expected.apply(dict(DIET_EFFECTS[Diet.NORMAL]))
+    expected = expected.apply({"age": 1})
     assert state["stats"] == expected.to_dict()
     assert state["month"] == 2
     assert state["slots"] == [None] * SLOTS_PER_MONTH
@@ -195,3 +202,41 @@ def test_list_activities_returns_the_activity_table(client):
         entry["effects"] == dict(ACTIVITY_EFFECTS[Activity(entry["id"])])
         for entry in activities
     )
+
+
+def test_list_diets_returns_the_diet_table(client):
+    response = client.get("/api/diets")
+
+    assert response.status_code == 200
+    diets = response.json()["diets"]
+    assert [entry["id"] for entry in diets] == [diet.value for diet in Diet]
+    assert all(
+        entry["effects"] == dict(DIET_EFFECTS[Diet(entry["id"])]) for entry in diets
+    )
+
+
+def test_advance_without_a_diet_field_defaults_to_normal(client):
+    start_run(client)
+
+    state = advance(client).json()
+
+    assert state["diet"] == "normal"
+    assert state["stats"]["weight"] == 51
+
+
+def test_advance_accepts_an_explicit_diet_field(client):
+    start_run(client)
+
+    state = advance(client, diet="hearty").json()
+
+    assert state["diet"] == "hearty"
+    assert state["stats"]["weight"] == 53
+    assert state["stats"]["health"] == 52
+
+
+def test_advance_rejects_an_unknown_diet(client):
+    start_run(client)
+
+    response = advance(client, diet="junk-food")
+
+    assert response.status_code == 400

@@ -3,7 +3,16 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass, replace
 
-STAT_NAMES = ("health", "affection", "discipline", "curiosity", "refinement", "stress")
+STAT_NAMES = (
+    "health",
+    "affection",
+    "discipline",
+    "curiosity",
+    "refinement",
+    "age",
+    "weight",
+    "stress",
+)
 STAT_MIN = 0
 STAT_MAX = 100
 
@@ -19,6 +28,8 @@ class CatStats:
     discipline: int = 10
     curiosity: int = 30
     refinement: int = 10
+    age: int = 1
+    weight: int = 50
     stress: int = 0
 
     def __post_init__(self) -> None:

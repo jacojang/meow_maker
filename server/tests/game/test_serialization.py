@@ -7,6 +7,7 @@ from app.game import (
     SLOTS_PER_MONTH,
     Activity,
     CatStats,
+    Diet,
     GameRun,
 )
 
@@ -24,13 +25,26 @@ def test_to_dict_is_plain_json_safe_data():
             "discipline": 10,
             "curiosity": 30,
             "refinement": 10,
+            "age": 1,
+            "weight": 50,
             "stress": 40,
         },
         "month": 4,
         "finished": False,
         "slots": [None, "train", None],
+        "diet": "normal",
     }
     assert json.loads(json.dumps(data)) == data
+
+
+def test_round_trip_preserves_a_non_default_diet():
+    run = GameRun()
+    run.assign_diet(Diet.HEARTY)
+
+    restored = GameRun.from_dict(json.loads(json.dumps(run.to_dict())))
+
+    assert restored.diet == Diet.HEARTY
+    assert restored == run
 
 
 def test_round_trip_preserves_a_run_in_progress():
