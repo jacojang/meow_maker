@@ -1,4 +1,14 @@
-export const STAT_NAMES = ['health', 'affection', 'discipline', 'curiosity', 'refinement', 'stress'];
+// `age` is excluded: it moves in lockstep with the month counter already
+// shown in the header, so a bar/delta for it would just repeat that number.
+export const STAT_NAMES = [
+  'health',
+  'affection',
+  'discipline',
+  'curiosity',
+  'refinement',
+  'weight',
+  'stress',
+];
 
 export function statDeltas(before, after) {
   if (!before || !after) return [];

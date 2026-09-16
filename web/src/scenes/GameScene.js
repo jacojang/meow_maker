@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { coverScale } from '../utils/coverScale.js';
 import { gameApi } from '../utils/gameApi.js';
 import { fitStep } from '../utils/layout.js';
+import { portraitKey } from '../utils/portrait.js';
 import { STAT_NAMES, formatDelta, statDeltas } from '../utils/statDeltas.js';
 import { addFullscreenButton } from './fullscreenButton.js';
 
@@ -15,6 +16,9 @@ const TOP_PANEL_HEIGHT = 208;
 const PICKER_Y = 304;
 const PICKER_HEIGHT = 216;
 
+const PICKER_COLUMN_X = [24, 256, 488, 720];
+const PICKER_COLUMN_WIDTH = 216;
+
 const PANEL_FILL = 0x11121f;
 const PANEL_ALPHA = 0.85;
 const CHOICE_FILL = 0x2a2c48;
@@ -26,6 +30,7 @@ const STAT_LABELS = {
   discipline: '규율',
   curiosity: '호기심',
   refinement: '기품',
+  weight: '체중',
   stress: '스트레스',
 };
 
@@ -37,12 +42,22 @@ const ACTIVITY_LABELS = {
   educate: '교육',
 };
 
+const DIET_LABELS = {
+  normal: '보통',
+  light: '저칼로리',
+  hearty: '든든하게',
+};
+
 function statLabel(stat) {
   return STAT_LABELS[stat] ?? stat;
 }
 
 function activityLabel(id) {
   return ACTIVITY_LABELS[id] ?? id;
+}
+
+function dietLabel(id) {
+  return DIET_LABELS[id] ?? id;
 }
 
 function effectsSummary(effects = {}) {
@@ -64,7 +79,9 @@ export class GameScene extends Phaser.Scene {
   init(data) {
     this.state = data?.state ?? null;
     this.activities = data?.activities ?? [];
+    this.diets = data?.diets ?? [];
     this.picks = this.defaultPicks();
+    this.dietPick = this.diets[0]?.id ?? 'normal';
     this.deltas = [];
     this.hasPlayedMonth = false;
     this.message = '';
@@ -116,7 +133,7 @@ export class GameScene extends Phaser.Scene {
     this.render();
 
     try {
-      const next = await this.api.advanceMonth([...this.picks]);
+      const next = await this.api.advanceMonth([...this.picks], this.dietPick);
       this.deltas = statDeltas(before, next.stats);
       this.hasPlayedMonth = true;
       this.state = next;
@@ -139,7 +156,7 @@ export class GameScene extends Phaser.Scene {
     }
 
     this.renderStats();
-    this.renderLastMonth();
+    this.renderPortrait();
     this.renderActivityTable();
 
     if (this.state.finished) {
@@ -214,32 +231,22 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  renderLastMonth() {
+  renderPortrait() {
     const x = COLUMN_X[1];
     this.panel(x, TOP_PANEL_Y, COLUMN_WIDTH, TOP_PANEL_HEIGHT);
-    this.text(x + 16, TOP_PANEL_Y + 12, '지난 달 변화', { fontStyle: 'bold' });
+    this.text(x + COLUMN_WIDTH / 2, TOP_PANEL_Y + 12, '고양이 상태', {
+      fontStyle: 'bold',
+    }).setOrigin(0.5, 0);
 
-    if (this.deltas.length === 0) {
-      const empty = this.hasPlayedMonth
-        ? '변화가 없었습니다.'
-        : '아직 보낸 달이 없습니다.';
-      this.text(x + 16, TOP_PANEL_Y + 48, empty, {
-        fontSize: '16px',
-        color: '#cfd2e6',
-      });
-      return;
-    }
+    const textureKey = `cat-${portraitKey(this.state.stats, this.state.is_sick)}`;
+    if (!this.textures.exists(textureKey)) return;
 
-    const step = fitStep(this.deltas.length, 30, TOP_PANEL_HEIGHT - 58);
-    this.deltas.forEach(({ stat, before, after, delta }, index) => {
-      const y = TOP_PANEL_Y + 48 + index * step;
-      this.text(x + 16, y, statLabel(stat), { fontSize: '17px', color: '#cfd2e6' });
-      this.text(x + COLUMN_WIDTH - 16, y, `${before} → ${after} (${formatDelta(delta)})`, {
-        fontSize: '17px',
-        fontStyle: 'bold',
-        color: delta > 0 ? '#8ce3a5' : '#ff9a9a',
-      }).setOrigin(1, 0);
-    });
+    const areaTop = TOP_PANEL_Y + 40;
+    const areaHeight = TOP_PANEL_HEIGHT - 52;
+    const areaWidth = COLUMN_WIDTH - 24;
+    const image = this.add.image(x + COLUMN_WIDTH / 2, areaTop + areaHeight / 2, textureKey);
+    image.setScale(Math.min(areaWidth / image.width, areaHeight / image.height));
+    this.ui.add(image);
   }
 
   renderActivityTable() {
@@ -265,8 +272,8 @@ export class GameScene extends Phaser.Scene {
 
   renderPickers() {
     this.picks.forEach((pick, slot) => {
-      const x = COLUMN_X[slot] ?? COLUMN_X[COLUMN_X.length - 1];
-      this.panel(x, PICKER_Y, COLUMN_WIDTH, PICKER_HEIGHT);
+      const x = PICKER_COLUMN_X[slot] ?? PICKER_COLUMN_X[PICKER_COLUMN_X.length - 1];
+      this.panel(x, PICKER_Y, PICKER_COLUMN_WIDTH, PICKER_HEIGHT);
       this.text(x + 16, PICKER_Y + 10, `슬롯 ${slot + 1}`, { fontStyle: 'bold' });
 
       const top = PICKER_Y + 44;
@@ -277,7 +284,7 @@ export class GameScene extends Phaser.Scene {
         this.choiceButton(
           x + 16,
           top + index * step,
-          COLUMN_WIDTH - 32,
+          PICKER_COLUMN_WIDTH - 32,
           step - 6,
           activityLabel(activity.id),
           activity.id === pick,
@@ -285,11 +292,41 @@ export class GameScene extends Phaser.Scene {
         );
       });
     });
+
+    this.renderDietPicker();
+  }
+
+  renderDietPicker() {
+    const x = PICKER_COLUMN_X[3];
+    this.panel(x, PICKER_Y, PICKER_COLUMN_WIDTH, PICKER_HEIGHT);
+    this.text(x + 16, PICKER_Y + 10, '식단', { fontStyle: 'bold' });
+
+    const top = PICKER_Y + 44;
+    const available = PICKER_HEIGHT - 56;
+    const step = Math.min(42, available / Math.max(this.diets.length, 1));
+
+    this.diets.forEach((diet, index) => {
+      this.choiceButton(
+        x + 16,
+        top + index * step,
+        PICKER_COLUMN_WIDTH - 32,
+        step - 6,
+        dietLabel(diet.id),
+        diet.id === this.dietPick,
+        () => this.chooseDiet(diet.id),
+      );
+    });
   }
 
   choose(slot, activityId) {
     if (this.busy) return;
     this.picks[slot] = activityId;
+    this.render();
+  }
+
+  chooseDiet(dietId) {
+    if (this.busy) return;
+    this.dietPick = dietId;
     this.render();
   }
 
@@ -342,15 +379,25 @@ export class GameScene extends Phaser.Scene {
   }
 
   renderMessage() {
-    if (!this.message) return;
-    this.text(CANVAS_WIDTH / 2, 526, this.message, {
+    const isError = !!this.message;
+    const text = this.message || this.lastMonthSummary();
+    if (!text) return;
+
+    this.text(CANVAS_WIDTH / 2, 526, text, {
       fontSize: '16px',
-      color: '#ffd7d7',
-      backgroundColor: '#5a1111',
+      color: isError ? '#ffd7d7' : '#cfd2e6',
+      backgroundColor: isError ? '#5a1111' : '#1c1e33',
       padding: { x: 10, y: 4 },
       wordWrap: { width: CANVAS_WIDTH - 96 },
       align: 'center',
     }).setOrigin(0.5, 0);
+  }
+
+  lastMonthSummary() {
+    if (this.deltas.length === 0) return '';
+    return `지난 달 변화  ${this.deltas
+      .map(({ stat, delta }) => `${statLabel(stat)}${formatDelta(delta)}`)
+      .join('  ')}`;
   }
 
   panel(x, y, width, height, alpha = PANEL_ALPHA) {

@@ -1,5 +1,5 @@
 ---
-status: planning
+status: review
 updated: 2026-09-17
 ---
 

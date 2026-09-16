@@ -41,11 +41,15 @@ export function createGameApi({
   return {
     startGame: () => send('/game', { method: 'POST' }),
     readGame: () => send('/game'),
-    advanceMonth: (activities) =>
-      send('/game/advance', { method: 'POST', body: { activities } }),
+    advanceMonth: (activities, diet = 'normal') =>
+      send('/game/advance', { method: 'POST', body: { activities, diet } }),
     listActivities: async () => {
       const payload = await send('/activities');
       return payload?.activities ?? [];
+    },
+    listDiets: async () => {
+      const payload = await send('/diets');
+      return payload?.diets ?? [];
     },
   };
 }
