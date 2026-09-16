@@ -1,18 +1,31 @@
 import pytest
 
 from app.game import ACTIVITY_EFFECTS, Activity, CatStats, apply_activity, effects_for
+from app.game.activities import _halve_toward_zero
 
 
 def test_every_activity_has_an_effect_entry():
     assert set(ACTIVITY_EFFECTS) == set(Activity)
 
 
-def test_play_raises_affection_curiosity_and_stress():
+def test_play_raises_affection_curiosity_and_stress_but_costs_refinement():
     stats = apply_activity(CatStats(), Activity.PLAY)
 
     assert stats.affection == 24
     assert stats.curiosity == 33
+    assert stats.refinement == 8
     assert stats.stress == 12
+    assert stats.health == 50
+    assert stats.discipline == 10
+
+
+def test_educate_raises_refinement_and_stress():
+    stats = apply_activity(CatStats(), Activity.EDUCATE)
+
+    assert stats.refinement == 15
+    assert stats.stress == 8
+    assert stats.affection == 20
+    assert stats.curiosity == 30
     assert stats.health == 50
     assert stats.discipline == 10
 
@@ -76,4 +89,23 @@ def test_sick_cat_gains_half_as_much_rounded_down():
 
     assert after.affection == 22
     assert after.curiosity == 31
+    assert after.refinement == 9
     assert after.stress == 52
+
+
+def test_sick_cat_educates_at_half_strength():
+    sick = CatStats(health=20, stress=40)
+    assert sick.is_sick
+
+    after = apply_activity(sick, Activity.EDUCATE)
+
+    assert after.refinement == 12
+    assert after.stress == 48
+
+
+def test_halving_rounds_toward_zero_for_negative_deltas():
+    assert _halve_toward_zero(4) == 2
+    assert _halve_toward_zero(3) == 1
+    assert _halve_toward_zero(-2) == -1
+    assert _halve_toward_zero(-3) == -1
+    assert _halve_toward_zero(-4) == -2

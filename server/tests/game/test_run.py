@@ -184,5 +184,6 @@ def test_full_twelve_month_simulation():
         "affection": 62,
         "discipline": 70,
         "curiosity": 48,
+        "refinement": 0,
         "stress": 0,
     }
