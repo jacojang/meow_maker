@@ -1,0 +1,32 @@
+---
+status: coding
+updated: 2026-09-17
+---
+
+# UI/UX Overhaul
+
+Umbrella doc for a batch of UI/UX work requested against `docs/design/screenshot/main_screen_01.gif` and `main_screen_02.gif` (actual PM2 PC gameplay footage), before Roadmap Phase 2. Same role as `roadmap.md`: this is the map: each part below ships as its own PR, in order.
+
+## Decisions (apply to every part below)
+
+- **Age becomes a real stat**, separate from the month counter — not derived from `month`. Lives in `server/app/game/`, same pattern as Refinement.
+- **Weight becomes a real stat with a diet mechanic**, not a proxy off an existing stat — matching PM2's actual system (diet choice moves weight, weight affects appearance).
+- **Portrait art**: 12 combinations (3 age stages × 2 health conditions × 2 weight conditions), generated via `tools/asset-gen`. Confirmed with the user before spending on generation.
+
+## Parts, in order
+
+1. **Stat bar graphs** — numbers plus a filled bar per stat in the 능력치 panel, matching the reference's red/blue bar style (simplified to one accent color: green for most stats, red for stress). No new mechanics. **Done** — see commit on `feature/stat-bar-graphs`.
+
+2. **Stateful cat portrait** — age + weight stats and a diet mechanic (server), 12 portrait images (asset-gen), and a central portrait in `GameScene` that picks the right image from current age/health/weight. Biggest part: new mechanics *and* new art.
+
+3. **Calendar-based scheduling** — replace the 3 button-list slot pickers with a calendar-grid UI for assigning the month's activities, per the reference's month-view calendar.
+
+4. **Action-in-progress animation** — a small animated vignette shown while an activity resolves, per `main_screen_02.gif`'s daycare-scene example.
+
+## Why this order
+
+Cheapest/lowest-risk first (bars: no new mechanics, no new art). Portrait next because it's the biggest lift and the most central to "make state visible," which was the throughline of the user's ask. Calendar and animation are UI-interaction changes that don't depend on the portrait work and can follow independently.
+
+## Next stage
+
+Straight to Coding per part — no separate Design doc; each part's doc note above (and any follow-up planning note for parts 2-4) carries the visual spec inline since it's a direct translation of the reference GIFs.
