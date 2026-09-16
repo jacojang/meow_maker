@@ -50,7 +50,7 @@ describe('createGameApi', () => {
     });
   });
 
-  it('sends the three picks as a json body when advancing', async () => {
+  it('sends the three picks and a default diet as a json body when advancing', async () => {
     const fetch = fakeFetch({ body: { ...STATE, month: 2 } });
     const api = createGameApi({ fetch });
 
@@ -61,7 +61,21 @@ describe('createGameApi', () => {
       method: 'POST',
       credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ activities: ['play', 'train', 'rest'] }),
+      body: JSON.stringify({ activities: ['play', 'train', 'rest'], diet: 'normal' }),
+    });
+  });
+
+  it('sends a custom diet when provided', async () => {
+    const fetch = fakeFetch({ body: { ...STATE, month: 2 } });
+    const api = createGameApi({ fetch });
+
+    await api.advanceMonth(['play', 'train', 'rest'], 'hearty');
+
+    expect(fetch).toHaveBeenCalledWith('/api/game/advance', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ activities: ['play', 'train', 'rest'], diet: 'hearty' }),
     });
   });
 
@@ -81,6 +95,24 @@ describe('createGameApi', () => {
     const api = createGameApi({ fetch: fakeFetch({ body: {} }) });
 
     await expect(api.listActivities()).resolves.toEqual([]);
+  });
+
+  it('unwraps the diet list', async () => {
+    const diets = [{ id: 'normal', effects: { weight: 1 } }];
+    const fetch = fakeFetch({ body: { diets } });
+    const api = createGameApi({ fetch });
+
+    await expect(api.listDiets()).resolves.toEqual(diets);
+    expect(fetch).toHaveBeenCalledWith('/api/diets', {
+      method: 'GET',
+      credentials: 'same-origin',
+    });
+  });
+
+  it('returns an empty list when the diets payload has no list', async () => {
+    const api = createGameApi({ fetch: fakeFetch({ body: {} }) });
+
+    await expect(api.listDiets()).resolves.toEqual([]);
   });
 
   it('throws an ApiError carrying the status and detail', async () => {

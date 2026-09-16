@@ -72,11 +72,12 @@ export class OpeningScene extends Phaser.Scene {
     buttonLabel.setText('시작 중…');
 
     try {
-      const [state, activities] = await Promise.all([
+      const [state, activities, diets] = await Promise.all([
         this.api.startGame(),
         this.api.listActivities(),
+        this.api.listDiets(),
       ]);
-      this.scene.start('GameScene', { state, activities });
+      this.scene.start('GameScene', { state, activities, diets });
     } catch (error) {
       const detail = error?.detail || error?.message || '';
       this.errorText.setText(`게임을 시작하지 못했습니다. ${detail}`.trim()).setVisible(true);
