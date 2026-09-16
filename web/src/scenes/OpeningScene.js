@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { coverScale } from '../utils/coverScale.js';
 import { gameApi } from '../utils/gameApi.js';
+import { addFullscreenButton } from './fullscreenButton.js';
 
 const CANVAS_WIDTH = 960;
 const CANVAS_HEIGHT = 600;
@@ -60,6 +61,8 @@ export class OpeningScene extends Phaser.Scene {
     buttonBg.on('pointerover', () => buttonBg.setFillStyle(0x1a1a2e, 0.95));
     buttonBg.on('pointerout', () => buttonBg.setFillStyle(0x1a1a2e, 0.75));
     buttonBg.on('pointerdown', () => this.startRun(buttonLabel));
+
+    addFullscreenButton(this);
   }
 
   async startRun(buttonLabel) {
