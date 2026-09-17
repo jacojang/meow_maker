@@ -17,7 +17,7 @@ Umbrella doc for a batch of UI/UX work requested against `docs/design/screenshot
 
 1. **Stat bar graphs** — numbers plus a filled bar per stat in the 능력치 panel, matching the reference's red/blue bar style (simplified to one accent color: green for most stats, red for stress). No new mechanics. **Done** — see commit on `feature/stat-bar-graphs`.
 
-2. **Stateful cat portrait** — age + weight stats and a diet mechanic (server), 12 portrait images (asset-gen), and a central portrait in `GameScene` that picks the right image from current age/health/weight. Biggest part: new mechanics *and* new art. **2a done** (merged). **2b in review** — see `docs/planning/stateful-portrait.md`.
+2. **Stateful cat portrait** — age + weight stats and a diet mechanic (server), 12 portrait images (asset-gen), and a central portrait in `GameScene` that picks the right image from current age/health/weight. Biggest part: new mechanics *and* new art. **Done** (2a and 2b both merged and deployed) — see `docs/planning/stateful-portrait.md`.
 
 3. **Calendar-based scheduling** — replace the 3 button-list slot pickers with a calendar-grid UI for assigning the month's activities, per the reference's month-view calendar.
 
