@@ -4,10 +4,13 @@ import { coverScale } from '../utils/coverScale.js';
 import { gameApi } from '../utils/gameApi.js';
 import { fitStep } from '../utils/layout.js';
 import { portraitKey } from '../utils/portrait.js';
+import { resolutionSteps } from '../utils/resolutionSteps.js';
 import { STAT_NAMES, formatDelta, statDeltas } from '../utils/statDeltas.js';
 import { addFullscreenButton } from './fullscreenButton.js';
 
 const DAYS_PER_MONTH = 30;
+const RESOLUTION_STEP_MS = 700;
+const DIET_VIGNETTE_COLOR = 0x8a8f4d;
 
 const CANVAS_WIDTH = 960;
 const CANVAS_HEIGHT = 600;
@@ -59,6 +62,20 @@ const ACTIVITY_COLORS = {
   educate: 0x7ec93c,
 };
 
+const ACTIVITY_FLAVOR = {
+  play: '신나게 뛰어놀며 하루를 보냈다.',
+  train: '진지한 얼굴로 훈련에 몰두했다.',
+  groom: '단정하게 털을 골랐다.',
+  rest: '햇살 아래서 늘어지게 낮잠을 잤다.',
+  educate: '새로운 것을 배우며 눈을 반짝였다.',
+};
+
+const DIET_FLAVOR = {
+  normal: '적당히 챙겨 먹었다.',
+  light: '가볍게 먹으며 몸매를 관리했다.',
+  hearty: '든든하게 배를 채웠다.',
+};
+
 function statLabel(stat) {
   return STAT_LABELS[stat] ?? stat;
 }
@@ -73,6 +90,14 @@ function dietLabel(id) {
 
 function activityColor(id) {
   return ACTIVITY_COLORS[id] ?? CHOICE_FILL;
+}
+
+function activityFlavor(id) {
+  return ACTIVITY_FLAVOR[id] ?? '';
+}
+
+function dietFlavor(id) {
+  return DIET_FLAVOR[id] ?? '';
 }
 
 function effectsSummary(effects = {}) {
@@ -102,6 +127,9 @@ export class GameScene extends Phaser.Scene {
     this.hasPlayedMonth = false;
     this.message = '';
     this.busy = false;
+    this.animating = false;
+    this.animationSteps = [];
+    this.animationIndex = 0;
   }
 
   create() {
@@ -150,6 +178,15 @@ export class GameScene extends Phaser.Scene {
 
     try {
       const next = await this.api.advanceMonth([...this.picks], this.dietPick);
+
+      try {
+        await this.playResolutionAnimation();
+      } catch {
+        // The animation is cosmetic only; never let it mask an
+        // already-successful advance with a false error message.
+      }
+
+      if (!this.alive) return;
       this.deltas = statDeltas(before, next.stats);
       this.hasPlayedMonth = true;
       this.state = next;
@@ -159,6 +196,38 @@ export class GameScene extends Phaser.Scene {
       this.busy = false;
       this.safeRender();
     }
+  }
+
+  buildResolutionSteps() {
+    return resolutionSteps(
+      DAYS_PER_MONTH,
+      this.picks,
+      this.activities,
+      this.dietPick,
+      this.diets,
+    ).map((step) => ({
+      ...step,
+      label: step.kind === 'diet' ? dietLabel(step.id) : activityLabel(step.id),
+      flavor: step.kind === 'diet' ? dietFlavor(step.id) : activityFlavor(step.id),
+      color: step.kind === 'diet' ? DIET_VIGNETTE_COLOR : activityColor(step.id),
+      effectsText: effectsSummary(step.effects),
+    }));
+  }
+
+  async playResolutionAnimation() {
+    this.animationSteps = this.buildResolutionSteps();
+    this.animating = true;
+    for (let index = 0; index < this.animationSteps.length; index += 1) {
+      if (!this.alive) return;
+      this.animationIndex = index;
+      this.render();
+      await this.delay(RESOLUTION_STEP_MS);
+    }
+    this.animating = false;
+  }
+
+  delay(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   render() {
@@ -177,6 +246,9 @@ export class GameScene extends Phaser.Scene {
 
     if (this.state.finished) {
       this.renderEndOfRun();
+    } else if (this.animating) {
+      this.renderResolutionOverlay();
+      this.renderPlayButton();
     } else {
       this.renderPickers();
       this.renderPlayButton();
@@ -393,6 +465,48 @@ export class GameScene extends Phaser.Scene {
         () => this.chooseDiet(diet.id),
       );
     });
+  }
+
+  renderResolutionOverlay() {
+    const x = PICKER_COLUMN_X[0];
+    const width = CANVAS_WIDTH - 48;
+    const step = this.animationSteps[this.animationIndex];
+    if (!step) return;
+
+    this.panel(x, PICKER_Y, width, PICKER_HEIGHT);
+    this.text(
+      x + 16,
+      PICKER_Y + 10,
+      `한 달을 보내는 중… (${this.animationIndex + 1}/${this.animationSteps.length})`,
+      { fontStyle: 'bold', color: '#ffd479' },
+    );
+
+    const vignetteWidth = 220;
+    const vignetteHeight = PICKER_HEIGHT - 60;
+    const vignetteX = x + 16;
+    const vignetteY = PICKER_Y + 44;
+    this.ui.add(
+      this.add
+        .rectangle(vignetteX, vignetteY, vignetteWidth, vignetteHeight, step.color, 0.9)
+        .setOrigin(0, 0)
+        .setStrokeStyle(2, 0xffffff, 0.6),
+    );
+    this.text(vignetteX + vignetteWidth / 2, vignetteY + vignetteHeight / 2, step.label, {
+      fontSize: '26px',
+      fontStyle: 'bold',
+      color: '#10111c',
+      align: 'center',
+      wordWrap: { width: vignetteWidth - 24 },
+    }).setOrigin(0.5);
+
+    const textX = vignetteX + vignetteWidth + 24;
+    this.text(textX, vignetteY + 4, step.title, { fontSize: '20px', fontStyle: 'bold' });
+    this.text(textX, vignetteY + 40, step.flavor, {
+      fontSize: '16px',
+      color: '#e7e9f5',
+      wordWrap: { width: width - vignetteWidth - 64 },
+    });
+    this.text(textX, vignetteY + 90, step.effectsText, { fontSize: '14px', color: '#cfd2e6' });
   }
 
   choose(slot, activityId) {
