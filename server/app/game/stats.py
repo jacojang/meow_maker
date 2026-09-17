@@ -15,6 +15,7 @@ STAT_NAMES = (
 )
 STAT_MIN = 0
 STAT_MAX = 100
+OVERWEIGHT_THRESHOLD = 80
 
 
 def clamp(value: int) -> int:
@@ -39,6 +40,10 @@ class CatStats:
     @property
     def is_sick(self) -> bool:
         return self.stress > self.health
+
+    @property
+    def is_overweight(self) -> bool:
+        return self.weight > OVERWEIGHT_THRESHOLD
 
     def apply(self, deltas: Mapping[str, int]) -> CatStats:
         unknown = sorted(set(deltas) - set(STAT_NAMES))

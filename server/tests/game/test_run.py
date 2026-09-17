@@ -219,6 +219,36 @@ def test_diet_effects_are_not_halved_while_the_slot_effects_are():
     assert run.stats.health == 20 + 1
 
 
+def test_the_cat_becomes_overweight_once_hearty_diet_pushes_weight_past_the_threshold():
+    run = GameRun(stats=CatStats(weight=79))
+    assert not run.is_overweight
+
+    run.assign_diet(Diet.HEARTY)
+    play_month(run, Activity.REST, Activity.REST, Activity.REST)
+
+    assert run.stats.weight == 82
+    assert run.is_overweight
+
+
+def test_overweight_penalty_applies_the_same_month_the_threshold_is_crossed():
+    run = GameRun(stats=CatStats(weight=79, affection=20))
+
+    run.assign_diet(Diet.HEARTY)
+    play_month(run, Activity.REST, Activity.REST, Activity.REST)
+
+    assert run.stats.affection == 18
+
+
+def test_no_overweight_penalty_while_at_or_under_the_threshold():
+    run = GameRun(stats=CatStats(weight=77, affection=20))
+
+    run.assign_diet(Diet.NORMAL)
+    play_month(run, Activity.REST, Activity.REST, Activity.REST)
+
+    assert run.stats.weight == 78
+    assert run.stats.affection == 20
+
+
 def test_run_rejects_an_impossible_month_or_slot_count():
     with pytest.raises(ValueError):
         GameRun(month=0)
