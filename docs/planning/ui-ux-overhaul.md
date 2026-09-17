@@ -1,5 +1,5 @@
 ---
-status: coding
+status: deployed
 updated: 2026-09-17
 ---
 
