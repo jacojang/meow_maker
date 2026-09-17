@@ -19,7 +19,7 @@ Umbrella doc for a batch of UI/UX work requested against `docs/design/screenshot
 
 2. **Stateful cat portrait** — age + weight stats and a diet mechanic (server), 12 portrait images (asset-gen), and a central portrait in `GameScene` that picks the right image from current age/health/weight. Biggest part: new mechanics *and* new art. **Done** (2a and 2b both merged and deployed) — see `docs/planning/stateful-portrait.md`.
 
-3. **Calendar-based scheduling** — replace the 3 button-list slot pickers with a calendar-grid UI for assigning the month's activities, per the reference's month-view calendar.
+3. **Calendar-based scheduling** — replace the 3 button-list slot pickers with a calendar-grid UI for assigning the month's activities, per the reference's month-view calendar. **In review.** Implementation note: Meow Maker's 3-slot mechanic didn't change — the calendar renders the month as 30 days (a constant, independent of real calendar dates) split into 3 equal 10-day ranges, one per existing slot, each row tinted by its assigned activity and clickable to focus it; an activity-choice strip below assigns the focused range. Day-level granularity is purely visual, not a new mechanic. Pure range math extracted to `web/src/utils/calendar.js` (`daySlots`) per AGENTS.md's testable-logic convention.
 
 4. **Action-in-progress animation** — a small animated vignette shown while an activity resolves, per `main_screen_02.gif`'s daycare-scene example.
 

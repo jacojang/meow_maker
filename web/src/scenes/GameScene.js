@@ -1,10 +1,13 @@
 import Phaser from 'phaser';
+import { daySlots } from '../utils/calendar.js';
 import { coverScale } from '../utils/coverScale.js';
 import { gameApi } from '../utils/gameApi.js';
 import { fitStep } from '../utils/layout.js';
 import { portraitKey } from '../utils/portrait.js';
 import { STAT_NAMES, formatDelta, statDeltas } from '../utils/statDeltas.js';
 import { addFullscreenButton } from './fullscreenButton.js';
+
+const DAYS_PER_MONTH = 30;
 
 const CANVAS_WIDTH = 960;
 const CANVAS_HEIGHT = 600;
@@ -48,6 +51,14 @@ const DIET_LABELS = {
   hearty: '든든하게',
 };
 
+const ACTIVITY_COLORS = {
+  play: 0xdc8a3c,
+  train: 0x3c6fdc,
+  groom: 0xb15fc9,
+  rest: 0x3ca6a0,
+  educate: 0x7ec93c,
+};
+
 function statLabel(stat) {
   return STAT_LABELS[stat] ?? stat;
 }
@@ -58,6 +69,10 @@ function activityLabel(id) {
 
 function dietLabel(id) {
   return DIET_LABELS[id] ?? id;
+}
+
+function activityColor(id) {
+  return ACTIVITY_COLORS[id] ?? CHOICE_FILL;
 }
 
 function effectsSummary(effects = {}) {
@@ -81,6 +96,7 @@ export class GameScene extends Phaser.Scene {
     this.activities = data?.activities ?? [];
     this.diets = data?.diets ?? [];
     this.picks = this.defaultPicks();
+    this.focusedSlot = 0;
     this.dietPick = this.diets[0]?.id ?? 'normal';
     this.deltas = [];
     this.hasPlayedMonth = false;
@@ -271,29 +287,90 @@ export class GameScene extends Phaser.Scene {
   }
 
   renderPickers() {
-    this.picks.forEach((pick, slot) => {
-      const x = PICKER_COLUMN_X[slot] ?? PICKER_COLUMN_X[PICKER_COLUMN_X.length - 1];
-      this.panel(x, PICKER_Y, PICKER_COLUMN_WIDTH, PICKER_HEIGHT);
-      this.text(x + 16, PICKER_Y + 10, `슬롯 ${slot + 1}`, { fontStyle: 'bold' });
+    this.renderCalendar();
+    this.renderCalendarChoices();
+    this.renderDietPicker();
+  }
 
-      const top = PICKER_Y + 44;
-      const available = PICKER_HEIGHT - 56;
-      const step = Math.min(42, available / Math.max(this.activities.length, 1));
+  renderCalendar() {
+    const x = PICKER_COLUMN_X[0];
+    const width =
+      PICKER_COLUMN_X[2] + PICKER_COLUMN_WIDTH - PICKER_COLUMN_X[0];
+    this.panel(x, PICKER_Y, width, PICKER_HEIGHT);
+    this.text(x + 16, PICKER_Y + 10, '이번 달 일정', { fontStyle: 'bold' });
 
-      this.activities.forEach((activity, index) => {
-        this.choiceButton(
-          x + 16,
-          top + index * step,
-          PICKER_COLUMN_WIDTH - 32,
-          step - 6,
-          activityLabel(activity.id),
-          activity.id === pick,
-          () => this.choose(slot, activity.id),
-        );
+    const slots = daySlots(DAYS_PER_MONTH, this.picks.length);
+    const labelWidth = 132;
+    const cellGap = 3;
+    const rowsTop = PICKER_Y + 40;
+    const rowHeight = Math.min(32, (this.calendarChoicesY() - 8 - rowsTop) / slots.length);
+
+    slots.forEach((range, slot) => {
+      const y = rowsTop + slot * rowHeight;
+      const pick = this.picks[slot];
+      const focused = this.focusedSlot === slot;
+      const cellsWidth = width - 32 - labelWidth;
+      const cellWidth = (cellsWidth - cellGap * (range.days.length - 1)) / range.days.length;
+
+      const label = this.text(
+        x + 16,
+        y + (rowHeight - 6) / 2,
+        `${range.start}~${range.end}일  ${activityLabel(pick)}`,
+        {
+          fontSize: '13px',
+          color: focused ? '#ffd479' : '#cfd2e6',
+          fontStyle: focused ? 'bold' : 'normal',
+        },
+      ).setOrigin(0, 0.5);
+      label.setInteractive({ useHandCursor: true });
+      label.on('pointerdown', () => this.focusSlot(slot));
+
+      range.days.forEach((day, index) => {
+        const cellX = x + 16 + labelWidth + index * (cellWidth + cellGap);
+        const fill = activityColor(pick);
+        const cell = this.add
+          .rectangle(cellX, y, cellWidth, rowHeight - 6, fill, focused ? 1 : 0.5)
+          .setOrigin(0, 0)
+          .setStrokeStyle(focused ? 2 : 1, 0xffffff, focused ? 0.9 : 0.25);
+        this.ui.add(cell);
+        this.text(cellX + cellWidth / 2, y + (rowHeight - 6) / 2, `${day}`, {
+          fontSize: '10px',
+          color: '#10111c',
+        }).setOrigin(0.5);
+
+        cell.setInteractive({ useHandCursor: true });
+        cell.on('pointerover', () => cell.setFillStyle(fill, 1));
+        cell.on('pointerout', () => cell.setFillStyle(fill, focused ? 1 : 0.5));
+        cell.on('pointerdown', () => this.focusSlot(slot));
       });
     });
+  }
 
-    this.renderDietPicker();
+  calendarChoicesY() {
+    return PICKER_Y + PICKER_HEIGHT - 48;
+  }
+
+  renderCalendarChoices() {
+    const x = PICKER_COLUMN_X[0];
+    const width =
+      PICKER_COLUMN_X[2] + PICKER_COLUMN_WIDTH - PICKER_COLUMN_X[0];
+    const y = this.calendarChoicesY();
+    const gap = 8;
+    const buttonWidth =
+      (width - 32 - gap * (this.activities.length - 1)) / this.activities.length;
+    const pick = this.picks[this.focusedSlot];
+
+    this.activities.forEach((activity, index) => {
+      this.choiceButton(
+        x + 16 + index * (buttonWidth + gap),
+        y,
+        buttonWidth,
+        36,
+        activityLabel(activity.id),
+        activity.id === pick,
+        () => this.choose(this.focusedSlot, activity.id),
+      );
+    });
   }
 
   renderDietPicker() {
@@ -321,6 +398,12 @@ export class GameScene extends Phaser.Scene {
   choose(slot, activityId) {
     if (this.busy) return;
     this.picks[slot] = activityId;
+    this.render();
+  }
+
+  focusSlot(slot) {
+    if (this.busy) return;
+    this.focusedSlot = slot;
     this.render();
   }
 
