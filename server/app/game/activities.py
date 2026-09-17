@@ -3,9 +3,12 @@ from __future__ import annotations
 import math
 from collections.abc import Mapping
 from enum import Enum
-from types import MappingProxyType
+from pathlib import Path
 
-from .stats import CatStats
+from .content import load_effects_table
+from .stats import STAT_NAMES, CatStats
+
+DATA_DIR = Path(__file__).resolve().parent / "data"
 
 
 class Activity(str, Enum):
@@ -16,16 +19,8 @@ class Activity(str, Enum):
     EDUCATE = "educate"
 
 
-ACTIVITY_EFFECTS: Mapping[Activity, Mapping[str, int]] = MappingProxyType(
-    {
-        Activity.PLAY: MappingProxyType(
-            {"affection": 4, "curiosity": 3, "refinement": -2, "stress": 12}
-        ),
-        Activity.TRAIN: MappingProxyType({"discipline": 5, "stress": 8}),
-        Activity.GROOM: MappingProxyType({"affection": 3, "health": 1, "stress": 3}),
-        Activity.REST: MappingProxyType({"stress": -20}),
-        Activity.EDUCATE: MappingProxyType({"refinement": 5, "stress": 8}),
-    }
+ACTIVITY_EFFECTS: Mapping[Activity, Mapping[str, int]] = load_effects_table(
+    DATA_DIR / "activities.json", Activity, STAT_NAMES
 )
 
 

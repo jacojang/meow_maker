@@ -1,0 +1,5 @@
+{
+  "normal": {"weight": 1},
+  "light": {"weight": -1},
+  "hearty": {"weight": 3, "health": 1}
+}
