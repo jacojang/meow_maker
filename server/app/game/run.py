@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import random
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Any
@@ -7,6 +8,8 @@ from typing import Any
 from .activities import Activity, apply_activity
 from .delinquency import apply_delinquent_penalty
 from .diet import Diet, apply_diet
+from .events import Event, apply_event, roll_event
+from .festival import FESTIVAL_MONTH, resolve_festival
 from .stats import CatStats
 from .weight import apply_overweight_penalty
 
@@ -39,6 +42,8 @@ class GameRun:
     finished: bool = False
     slots: list[Activity | None] = field(default_factory=_empty_slots)
     diet: Diet = Diet.NORMAL
+    last_event: Event | None = None
+    last_festival_winner: str | None = None
 
     def __post_init__(self) -> None:
         if not FIRST_MONTH <= self.month <= MONTHS_PER_RUN:
@@ -76,17 +81,26 @@ class GameRun:
         self._require_active()
         self.diet = Diet(diet)
 
-    def advance_month(self) -> None:
+    def advance_month(self, rng: random.Random | None = None) -> None:
         self._require_active()
         if any(slot is None for slot in self.slots):
             raise IncompleteMonthError("every slot must be assigned before advancing")
+        rng = rng or random.Random()
 
         for activity in self.slots:
             self.stats = apply_activity(self.stats, activity)
 
+        event = roll_event(rng)
+        self.stats = apply_event(self.stats, event)
+        self.last_event = event
+
         self.stats = apply_diet(self.stats, self.diet)
         self.stats = apply_overweight_penalty(self.stats)
         self.stats = apply_delinquent_penalty(self.stats)
+
+        if self.month == FESTIVAL_MONTH:
+            self.stats, self.last_festival_winner = resolve_festival(self.stats)
+
         self.stats = self.stats.apply({"age": 1})
 
         self.slots = _empty_slots()
@@ -106,6 +120,8 @@ class GameRun:
             "finished": self.finished,
             "slots": [None if slot is None else slot.value for slot in self.slots],
             "diet": self.diet.value,
+            "last_event": None if self.last_event is None else self.last_event.value,
+            "last_festival_winner": self.last_festival_winner,
         }
 
     @classmethod
@@ -114,10 +130,13 @@ class GameRun:
         if missing:
             raise ValueError(f"missing keys: {missing}")
         slots = data["slots"]
+        last_event = data.get("last_event")
         return cls(
             stats=CatStats.from_dict(data["stats"]),
             month=int(data["month"]),
             finished=bool(data["finished"]),
             slots=[None if slot is None else Activity(slot) for slot in slots],
             diet=Diet(data["diet"]),
+            last_event=None if last_event is None else Event(last_event),
+            last_festival_winner=data.get("last_festival_winner"),
         )

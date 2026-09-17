@@ -1,3 +1,7 @@
+import random
+
+from fastapi.testclient import TestClient
+
 from app.game import (
     ACTIVITY_EFFECTS,
     DIET_EFFECTS,
@@ -6,10 +10,12 @@ from app.game import (
     Activity,
     CatStats,
     Diet,
+    Event,
     apply_activity,
     apply_delinquent_penalty,
     apply_overweight_penalty,
 )
+from app.rng import get_rng
 from app.session import SESSION_COOKIE_NAME
 
 A_MONTH = ["play", "train", "groom"]
@@ -34,6 +40,8 @@ def test_start_game_returns_a_fresh_run(client):
     assert state["month"] == 1
     assert state["finished"] is False
     assert state["is_sick"] is False
+    assert state["last_event"] is None
+    assert state["last_festival_winner"] is None
     assert state["slots"] == [None] * SLOTS_PER_MONTH
     assert state["stats"] == CatStats().to_dict()
     assert state["months_per_run"] == MONTHS_PER_RUN
@@ -263,3 +271,19 @@ def test_state_reports_delinquent_once_stress_exceeds_discipline(client):
 
     assert state["stats"]["stress"] > state["stats"]["discipline"]
     assert state["is_delinquent"] is True
+
+
+def test_state_reports_an_event_when_the_rng_forces_one(api_app):
+    class _AlwaysGift(random.Random):
+        def random(self):
+            return 0.0
+
+        def choice(self, seq):
+            return Event.GIFT
+
+    api_app.dependency_overrides[get_rng] = lambda: _AlwaysGift()
+    with TestClient(api_app) as client:
+        start_run(client)
+        state = advance(client).json()
+
+    assert state["last_event"] == "gift"

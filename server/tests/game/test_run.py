@@ -1,20 +1,26 @@
+import random
+
 import pytest
 
 from app.game import (
+    FESTIVAL_BONUS,
+    FESTIVAL_MONTH,
     MONTHS_PER_RUN,
     SLOTS_PER_MONTH,
     Activity,
     CatStats,
     Diet,
+    Event,
     GameRun,
     IncompleteMonthError,
     RunFinishedError,
 )
+from app.rng import NeverRng
 
 
-def play_month(run, *activities):
+def play_month(run, *activities, rng=None):
     run.assign_month(list(activities))
-    run.advance_month()
+    run.advance_month(rng=rng or NeverRng())
 
 
 def test_new_run_starts_at_month_one_with_empty_slots():
@@ -116,7 +122,7 @@ def test_sickness_degrades_gains_until_rest_recovers():
     run = GameRun(stats=CatStats(health=20, stress=16))
 
     run.assign_month([Activity.TRAIN, Activity.TRAIN, Activity.REST])
-    run.advance_month()
+    run.advance_month(rng=NeverRng())
 
     assert run.stats.discipline == 10 + 5 + 2
     assert run.stats.stress == 12
@@ -289,6 +295,75 @@ def test_training_recovers_from_delinquency():
     assert not run.is_delinquent
 
 
+class _AlwaysRng(random.Random):
+    def __init__(self, event: Event) -> None:
+        super().__init__()
+        self._event = event
+
+    def random(self) -> float:
+        return 0.0
+
+    def choice(self, seq):
+        return self._event
+
+
+def test_no_event_by_default_with_never_rng():
+    run = GameRun()
+
+    play_month(run, Activity.REST, Activity.REST, Activity.REST)
+
+    assert run.last_event is None
+
+
+def test_an_event_applies_its_effects_and_is_recorded():
+    run = GameRun(stats=CatStats(affection=20))
+
+    play_month(run, Activity.REST, Activity.REST, Activity.REST, rng=_AlwaysRng(Event.VISITOR))
+
+    assert run.last_event is Event.VISITOR
+    assert run.stats.affection == 23
+
+
+def test_last_event_is_overwritten_each_month():
+    run = GameRun()
+    play_month(run, Activity.REST, Activity.REST, Activity.REST, rng=_AlwaysRng(Event.GIFT))
+    assert run.last_event is Event.GIFT
+
+    play_month(run, Activity.REST, Activity.REST, Activity.REST)
+    assert run.last_event is None
+
+
+def test_a_fixed_seed_reproduces_the_same_event_and_stats():
+    def play_with_seed(seed):
+        run = GameRun()
+        run.assign_month([Activity.PLAY, Activity.TRAIN, Activity.REST])
+        run.advance_month(rng=random.Random(seed))
+        return run
+
+    run_a = play_with_seed(42)
+    run_b = play_with_seed(42)
+
+    assert run_a.last_event == run_b.last_event
+    assert run_a.stats == run_b.stats
+
+
+def test_festival_fires_at_the_fixed_month_and_rewards_the_best_stat():
+    run = GameRun(month=FESTIVAL_MONTH, stats=CatStats(affection=80))
+
+    play_month(run, Activity.REST, Activity.REST, Activity.REST)
+
+    assert run.last_festival_winner == "affection"
+    assert run.stats.affection == 80 + FESTIVAL_BONUS
+
+
+def test_no_festival_outside_the_fixed_month():
+    run = GameRun(month=FESTIVAL_MONTH - 1, stats=CatStats(affection=80))
+
+    play_month(run, Activity.REST, Activity.REST, Activity.REST)
+
+    assert run.last_festival_winner is None
+
+
 def test_run_rejects_an_impossible_month_or_slot_count():
     with pytest.raises(ValueError):
         GameRun(month=0)
@@ -309,15 +384,18 @@ def test_full_twelve_month_simulation():
 
     for month_plan in plan:
         run.assign_month(month_plan)
-        run.advance_month()
+        run.advance_month(rng=NeverRng())
 
     assert run.finished is True
     assert run.month == MONTHS_PER_RUN
     assert not run.is_sick
+    # Month 10 (FESTIVAL_MONTH) lands on a TRAIN month, so the festival's
+    # +5 goes to discipline -- already this plan's highest festival stat.
+    assert run.last_festival_winner == "discipline"
     assert run.stats.to_dict() == {
         "health": 56,
         "affection": 62,
-        "discipline": 70,
+        "discipline": 75,
         "curiosity": 48,
         "refinement": 0,
         "age": 13,
