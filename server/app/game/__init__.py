@@ -9,7 +9,8 @@ from .run import (
     IncompleteMonthError,
     RunFinishedError,
 )
-from .stats import STAT_MAX, STAT_MIN, STAT_NAMES, CatStats, clamp
+from .stats import OVERWEIGHT_THRESHOLD, STAT_MAX, STAT_MIN, STAT_NAMES, CatStats, clamp
+from .weight import OVERWEIGHT_PENALTY, apply_overweight_penalty
 
 __all__ = [
     "ACTIVITY_EFFECTS",
@@ -24,6 +25,9 @@ __all__ = [
     "STAT_NAMES",
     "STAT_MIN",
     "STAT_MAX",
+    "OVERWEIGHT_THRESHOLD",
+    "OVERWEIGHT_PENALTY",
+    "apply_overweight_penalty",
     "GameRun",
     "GameRuleError",
     "RunFinishedError",

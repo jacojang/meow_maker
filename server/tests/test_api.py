@@ -240,3 +240,13 @@ def test_advance_rejects_an_unknown_diet(client):
     response = advance(client, diet="junk-food")
 
     assert response.status_code == 400
+
+
+def test_state_reports_overweight_once_hearty_diet_pushes_past_the_threshold(client):
+    start_run(client)
+
+    for _ in range(11):
+        state = advance(client, diet="hearty").json()
+
+    assert state["stats"]["weight"] > 80
+    assert state["is_overweight"] is True

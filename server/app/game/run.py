@@ -7,6 +7,7 @@ from typing import Any
 from .activities import Activity, apply_activity
 from .diet import Diet, apply_diet
 from .stats import CatStats
+from .weight import apply_overweight_penalty
 
 MONTHS_PER_RUN = 12
 SLOTS_PER_MONTH = 3
@@ -48,6 +49,10 @@ class GameRun:
     def is_sick(self) -> bool:
         return self.stats.is_sick
 
+    @property
+    def is_overweight(self) -> bool:
+        return self.stats.is_overweight
+
     def assign_slot(self, index: int, activity: Activity) -> None:
         self._require_active()
         if not 0 <= index < SLOTS_PER_MONTH:
@@ -75,6 +80,7 @@ class GameRun:
             self.stats = apply_activity(self.stats, activity)
 
         self.stats = apply_diet(self.stats, self.diet)
+        self.stats = apply_overweight_penalty(self.stats)
         self.stats = self.stats.apply({"age": 1})
 
         self.slots = _empty_slots()

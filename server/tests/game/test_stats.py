@@ -78,6 +78,11 @@ def test_is_sick_only_once_stress_exceeds_health():
     assert CatStats(health=40, stress=41).is_sick
 
 
+def test_is_overweight_only_once_weight_exceeds_the_threshold():
+    assert not CatStats(weight=80).is_overweight
+    assert CatStats(weight=81).is_overweight
+
+
 def test_stats_round_trip_through_dict():
     stats = CatStats(
         health=61, affection=12, discipline=99, curiosity=3, refinement=7, stress=44
