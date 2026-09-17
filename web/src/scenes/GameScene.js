@@ -15,8 +15,8 @@ const DIET_VIGNETTE_COLOR = 0x8a8f4d;
 const CANVAS_WIDTH = 960;
 const CANVAS_HEIGHT = 600;
 
-const COLUMN_X = [24, 344, 664];
-const COLUMN_WIDTH = 272;
+const COLUMN_X = [24, 504];
+const COLUMN_WIDTH = 432;
 const TOP_PANEL_Y = 80;
 const TOP_PANEL_HEIGHT = 208;
 const PICKER_Y = 304;
@@ -130,6 +130,7 @@ export class GameScene extends Phaser.Scene {
     this.animating = false;
     this.animationSteps = [];
     this.animationIndex = 0;
+    this.showActivityInfo = false;
   }
 
   create() {
@@ -242,7 +243,6 @@ export class GameScene extends Phaser.Scene {
 
     this.renderStats();
     this.renderPortrait();
-    this.renderActivityTable();
 
     if (this.state.finished) {
       this.renderEndOfRun();
@@ -255,6 +255,10 @@ export class GameScene extends Phaser.Scene {
     }
 
     this.renderMessage();
+
+    if (this.showActivityInfo) {
+      this.renderActivityInfoPopup();
+    }
   }
 
   renderHeader() {
@@ -288,6 +292,7 @@ export class GameScene extends Phaser.Scene {
     const x = COLUMN_X[0];
     this.panel(x, TOP_PANEL_Y, COLUMN_WIDTH, TOP_PANEL_HEIGHT);
     this.text(x + 16, TOP_PANEL_Y + 12, '능력치', { fontStyle: 'bold' });
+    this.renderActivityInfoButton(x + COLUMN_WIDTH - 28, TOP_PANEL_Y + 22);
 
     const step = fitStep(STAT_NAMES.length, 34, TOP_PANEL_HEIGHT - 58);
     STAT_NAMES.forEach((stat, index) => {
@@ -337,25 +342,84 @@ export class GameScene extends Phaser.Scene {
     this.ui.add(image);
   }
 
-  renderActivityTable() {
-    const x = COLUMN_X[2];
-    this.panel(x, TOP_PANEL_Y, COLUMN_WIDTH, TOP_PANEL_HEIGHT);
-    this.text(x + 16, TOP_PANEL_Y + 12, '활동 효과', { fontStyle: 'bold' });
+  renderActivityInfoButton(x, y) {
+    const radius = 12;
+    const bg = this.add
+      .circle(x, y, radius, 0x2a2c48, 1)
+      .setStrokeStyle(1, 0xffffff, 0.5)
+      .setInteractive({ useHandCursor: true });
+    this.ui.add(bg);
+    this.text(x, y, 'i', { fontSize: '14px', fontStyle: 'bold italic', color: '#ffd479' }).setOrigin(
+      0.5,
+    );
 
-    const step = fitStep(this.activities.length, 34, TOP_PANEL_HEIGHT - 56);
-    const effectOffset = Math.min(16, step - 12);
+    bg.on('pointerover', () => bg.setFillStyle(0x393c5e, 1));
+    bg.on('pointerout', () => bg.setFillStyle(0x2a2c48, 1));
+    bg.on('pointerdown', () => this.openActivityInfo());
+  }
+
+  openActivityInfo() {
+    this.showActivityInfo = true;
+    this.render();
+  }
+
+  closeActivityInfo() {
+    this.showActivityInfo = false;
+    this.render();
+  }
+
+  renderActivityInfoPopup() {
+    const backdrop = this.add
+      .rectangle(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT, 0x000000, 0.6)
+      .setOrigin(0, 0)
+      .setInteractive();
+    backdrop.on('pointerdown', () => this.closeActivityInfo());
+    this.ui.add(backdrop);
+
+    const width = 520;
+    const height = 340;
+    const x = (CANVAS_WIDTH - width) / 2;
+    const y = (CANVAS_HEIGHT - height) / 2;
+
+    const modal = this.panel(x, y, width, height, 0.98);
+    modal.setInteractive();
+
+    this.text(x + 20, y + 16, '활동 효과', { fontSize: '20px', fontStyle: 'bold' });
+    this.renderActivityEffectsList(x + 20, y + 56, width - 40, height - 96);
+    this.renderCloseButton(x + width - 20, y + 16);
+  }
+
+  renderActivityEffectsList(x, y, width, availableHeight) {
+    const step = fitStep(this.activities.length, 40, availableHeight);
+    const effectOffset = Math.min(18, step - 14);
     this.activities.forEach((activity, index) => {
-      const y = TOP_PANEL_Y + 44 + index * step;
-      this.text(x + 16, y, activityLabel(activity.id), {
-        fontSize: '15px',
+      const rowY = y + index * step;
+      this.text(x, rowY, activityLabel(activity.id), {
+        fontSize: '17px',
+        fontStyle: 'bold',
         color: '#ffd479',
       });
-      this.text(x + 16, y + effectOffset, effectsSummary(activity.effects), {
-        fontSize: '12px',
+      this.text(x, rowY + effectOffset, effectsSummary(activity.effects), {
+        fontSize: '14px',
         color: '#cfd2e6',
-        wordWrap: { width: COLUMN_WIDTH - 32 },
+        wordWrap: { width },
       });
     });
+  }
+
+  renderCloseButton(rightX, topY) {
+    const size = 24;
+    const bg = this.add
+      .rectangle(rightX, topY, size, size, 0x2a2c48, 1)
+      .setOrigin(1, 0)
+      .setStrokeStyle(1, 0xffffff, 0.4)
+      .setInteractive({ useHandCursor: true });
+    this.ui.add(bg);
+    this.text(rightX - size / 2, topY + size / 2, '✕', { fontSize: '14px' }).setOrigin(0.5);
+
+    bg.on('pointerover', () => bg.setFillStyle(0x393c5e, 1));
+    bg.on('pointerout', () => bg.setFillStyle(0x2a2c48, 1));
+    bg.on('pointerdown', () => this.closeActivityInfo());
   }
 
   renderPickers() {
@@ -487,17 +551,37 @@ export class GameScene extends Phaser.Scene {
     const vignetteY = PICKER_Y + 44;
     this.ui.add(
       this.add
-        .rectangle(vignetteX, vignetteY, vignetteWidth, vignetteHeight, step.color, 0.9)
+        .rectangle(vignetteX, vignetteY, vignetteWidth, vignetteHeight, step.color, 0.35)
         .setOrigin(0, 0)
         .setStrokeStyle(2, 0xffffff, 0.6),
     );
-    this.text(vignetteX + vignetteWidth / 2, vignetteY + vignetteHeight / 2, step.label, {
-      fontSize: '26px',
+
+    const textureKey = `cat-${portraitKey(this.state.stats, this.state.is_sick)}`;
+    if (this.textures.exists(textureKey)) {
+      const portraitSize = Math.min(vignetteWidth, vignetteHeight - 36) - 20;
+      const image = this.add.image(
+        vignetteX + vignetteWidth / 2,
+        vignetteY + (vignetteHeight - 36) / 2,
+        textureKey,
+      );
+      const baseScale = portraitSize / Math.max(image.width, image.height);
+      image.setScale(baseScale);
+      this.ui.add(image);
+      this.tweens.add({
+        targets: image,
+        scale: baseScale * 1.1,
+        duration: RESOLUTION_STEP_MS / 2,
+        yoyo: true,
+        ease: 'Sine.easeInOut',
+      });
+    }
+
+    this.text(vignetteX + vignetteWidth / 2, vignetteY + vignetteHeight - 14, step.label, {
+      fontSize: '15px',
       fontStyle: 'bold',
-      color: '#10111c',
       align: 'center',
-      wordWrap: { width: vignetteWidth - 24 },
-    }).setOrigin(0.5);
+      wordWrap: { width: vignetteWidth - 16 },
+    }).setOrigin(0.5, 1);
 
     const textX = vignetteX + vignetteWidth + 24;
     this.text(textX, vignetteY + 4, step.title, { fontSize: '20px', fontStyle: 'bold' });
