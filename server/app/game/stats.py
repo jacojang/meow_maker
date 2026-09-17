@@ -45,6 +45,10 @@ class CatStats:
     def is_overweight(self) -> bool:
         return self.weight > OVERWEIGHT_THRESHOLD
 
+    @property
+    def is_delinquent(self) -> bool:
+        return self.stress > self.discipline
+
     def apply(self, deltas: Mapping[str, int]) -> CatStats:
         unknown = sorted(set(deltas) - set(STAT_NAMES))
         if unknown:

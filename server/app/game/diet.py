@@ -2,9 +2,12 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from enum import Enum
-from types import MappingProxyType
+from pathlib import Path
 
-from .stats import CatStats
+from .content import load_effects_table
+from .stats import STAT_NAMES, CatStats
+
+DATA_DIR = Path(__file__).resolve().parent / "data"
 
 
 class Diet(str, Enum):
@@ -13,12 +16,8 @@ class Diet(str, Enum):
     HEARTY = "hearty"
 
 
-DIET_EFFECTS: Mapping[Diet, Mapping[str, int]] = MappingProxyType(
-    {
-        Diet.NORMAL: MappingProxyType({"weight": 1}),
-        Diet.LIGHT: MappingProxyType({"weight": -1}),
-        Diet.HEARTY: MappingProxyType({"weight": 3, "health": 1}),
-    }
+DIET_EFFECTS: Mapping[Diet, Mapping[str, int]] = load_effects_table(
+    DATA_DIR / "diets.json", Diet, STAT_NAMES
 )
 
 

@@ -83,6 +83,12 @@ def test_is_overweight_only_once_weight_exceeds_the_threshold():
     assert CatStats(weight=81).is_overweight
 
 
+def test_is_delinquent_only_once_stress_exceeds_discipline():
+    assert not CatStats(discipline=10, stress=9).is_delinquent
+    assert not CatStats(discipline=10, stress=10).is_delinquent
+    assert CatStats(discipline=10, stress=11).is_delinquent
+
+
 def test_stats_round_trip_through_dict():
     stats = CatStats(
         health=61, affection=12, discipline=99, curiosity=3, refinement=7, stress=44

@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from .activities import Activity, apply_activity
+from .delinquency import apply_delinquent_penalty
 from .diet import Diet, apply_diet
 from .stats import CatStats
 from .weight import apply_overweight_penalty
@@ -53,6 +54,10 @@ class GameRun:
     def is_overweight(self) -> bool:
         return self.stats.is_overweight
 
+    @property
+    def is_delinquent(self) -> bool:
+        return self.stats.is_delinquent
+
     def assign_slot(self, index: int, activity: Activity) -> None:
         self._require_active()
         if not 0 <= index < SLOTS_PER_MONTH:
@@ -81,6 +86,7 @@ class GameRun:
 
         self.stats = apply_diet(self.stats, self.diet)
         self.stats = apply_overweight_penalty(self.stats)
+        self.stats = apply_delinquent_penalty(self.stats)
         self.stats = self.stats.apply({"age": 1})
 
         self.slots = _empty_slots()

@@ -32,6 +32,7 @@ def _state(run: GameRun) -> dict[str, Any]:
         **run.to_dict(),
         "is_sick": run.is_sick,
         "is_overweight": run.is_overweight,
+        "is_delinquent": run.is_delinquent,
         "months_per_run": MONTHS_PER_RUN,
         "slots_per_month": SLOTS_PER_MONTH,
     }

@@ -1,4 +1,5 @@
 from .activities import ACTIVITY_EFFECTS, Activity, apply_activity, effects_for
+from .delinquency import DELINQUENT_PENALTY, apply_delinquent_penalty
 from .diet import DIET_EFFECTS, Diet, apply_diet
 from .run import (
     FIRST_MONTH,
@@ -28,6 +29,8 @@ __all__ = [
     "OVERWEIGHT_THRESHOLD",
     "OVERWEIGHT_PENALTY",
     "apply_overweight_penalty",
+    "DELINQUENT_PENALTY",
+    "apply_delinquent_penalty",
     "GameRun",
     "GameRuleError",
     "RunFinishedError",

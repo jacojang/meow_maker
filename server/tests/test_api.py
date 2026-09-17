@@ -7,6 +7,8 @@ from app.game import (
     CatStats,
     Diet,
     apply_activity,
+    apply_delinquent_penalty,
+    apply_overweight_penalty,
 )
 from app.session import SESSION_COOKIE_NAME
 
@@ -110,6 +112,8 @@ def test_advance_applies_every_activity_and_moves_to_the_next_month(client):
     for name in A_MONTH:
         expected = apply_activity(expected, Activity(name))
     expected = expected.apply(dict(DIET_EFFECTS[Diet.NORMAL]))
+    expected = apply_overweight_penalty(expected)
+    expected = apply_delinquent_penalty(expected)
     expected = expected.apply({"age": 1})
     assert state["stats"] == expected.to_dict()
     assert state["month"] == 2
@@ -250,3 +254,12 @@ def test_state_reports_overweight_once_hearty_diet_pushes_past_the_threshold(cli
 
     assert state["stats"]["weight"] > 80
     assert state["is_overweight"] is True
+
+
+def test_state_reports_delinquent_once_stress_exceeds_discipline(client):
+    start_run(client)
+
+    state = advance(client, activities=["play", "play", "play"]).json()
+
+    assert state["stats"]["stress"] > state["stats"]["discipline"]
+    assert state["is_delinquent"] is True

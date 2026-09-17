@@ -54,7 +54,8 @@ def test_sickness_is_recomputed_between_slots():
 
     play_month(run, Activity.TRAIN, Activity.TRAIN, Activity.TRAIN)
 
-    assert run.stats.discipline == 10 + 5 + 5 + 2
+    # Also delinquent by month's end (stress 24 > discipline 22), -1 more.
+    assert run.stats.discipline == 10 + 5 + 5 + 2 - 1
     assert run.stats.stress == 24
 
 
@@ -212,7 +213,8 @@ def test_diet_effects_are_not_halved_while_the_slot_effects_are():
     play_month(run, Activity.TRAIN, Activity.TRAIN, Activity.TRAIN)
 
     # TRAIN {"discipline": 5, "stress": 8}, halved for sickness except stress.
-    assert run.stats.discipline == 10 + 2 + 2 + 2
+    # Also delinquent by month's end (stress 64 > discipline 16), -1 more.
+    assert run.stats.discipline == 10 + 2 + 2 + 2 - 1
     assert run.stats.stress == 40 + 8 + 8 + 8
     # HEARTY {"weight": 3, "health": 1} applies at full strength despite sickness.
     assert run.stats.weight == 50 + 3
@@ -247,6 +249,44 @@ def test_no_overweight_penalty_while_at_or_under_the_threshold():
 
     assert run.stats.weight == 78
     assert run.stats.affection == 20
+
+
+def test_the_cat_becomes_delinquent_once_stress_exceeds_discipline():
+    run = GameRun(stats=CatStats(discipline=10, stress=0))
+    assert not run.is_delinquent
+
+    play_month(run, Activity.PLAY, Activity.PLAY, Activity.PLAY)
+
+    assert run.stats.stress == 36
+    assert run.is_delinquent
+
+
+def test_delinquent_penalty_applies_the_same_month_the_threshold_is_crossed():
+    run = GameRun(stats=CatStats(discipline=10, stress=0))
+
+    play_month(run, Activity.PLAY, Activity.PLAY, Activity.PLAY)
+
+    assert run.stats.discipline == 9
+
+
+def test_no_delinquent_penalty_while_at_or_under_the_threshold():
+    run = GameRun(stats=CatStats(discipline=50, stress=0))
+
+    play_month(run, Activity.PLAY, Activity.PLAY, Activity.PLAY)
+
+    assert run.stats.stress == 36
+    assert run.stats.discipline == 50
+
+
+def test_training_recovers_from_delinquency():
+    run = GameRun(stats=CatStats(discipline=10, stress=36))
+    assert run.is_delinquent
+
+    play_month(run, Activity.TRAIN, Activity.REST, Activity.REST)
+
+    assert run.stats.discipline == 15
+    assert run.stats.stress == 4
+    assert not run.is_delinquent
 
 
 def test_run_rejects_an_impossible_month_or_slot_count():

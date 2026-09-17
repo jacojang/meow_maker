@@ -1,0 +1,7 @@
+{
+  "play": {"affection": 4, "curiosity": 3, "refinement": -2, "stress": 12},
+  "train": {"discipline": 5, "stress": 8},
+  "groom": {"affection": 3, "health": 1, "stress": 3},
+  "rest": {"stress": -20},
+  "educate": {"refinement": 5, "stress": 8}
+}
