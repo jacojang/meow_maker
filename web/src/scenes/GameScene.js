@@ -212,6 +212,10 @@ export class GameScene extends Phaser.Scene {
       flavor: step.kind === 'diet' ? dietFlavor(step.id) : activityFlavor(step.id),
       color: step.kind === 'diet' ? DIET_VIGNETTE_COLOR : activityColor(step.id),
       effectsText: effectsSummary(step.effects),
+      textureKey:
+        step.kind === 'diet'
+          ? `cat-${portraitKey(this.state.stats, this.state.is_sick)}`
+          : `scene-${step.id}`,
     }));
   }
 
@@ -545,7 +549,7 @@ export class GameScene extends Phaser.Scene {
       { fontStyle: 'bold', color: '#ffd479' },
     );
 
-    const vignetteWidth = 220;
+    const vignetteWidth = 340;
     const vignetteHeight = PICKER_HEIGHT - 60;
     const vignetteX = x + 16;
     const vignetteY = PICKER_Y + 44;
@@ -556,20 +560,20 @@ export class GameScene extends Phaser.Scene {
         .setStrokeStyle(2, 0xffffff, 0.6),
     );
 
-    const textureKey = `cat-${portraitKey(this.state.stats, this.state.is_sick)}`;
-    if (this.textures.exists(textureKey)) {
-      const portraitSize = Math.min(vignetteWidth, vignetteHeight - 36) - 20;
+    if (this.textures.exists(step.textureKey)) {
+      const areaWidth = vignetteWidth - 16;
+      const areaHeight = vignetteHeight - 36;
       const image = this.add.image(
         vignetteX + vignetteWidth / 2,
-        vignetteY + (vignetteHeight - 36) / 2,
-        textureKey,
+        vignetteY + areaHeight / 2,
+        step.textureKey,
       );
-      const baseScale = portraitSize / Math.max(image.width, image.height);
+      const baseScale = Math.min(areaWidth / image.width, areaHeight / image.height);
       image.setScale(baseScale);
       this.ui.add(image);
       this.tweens.add({
         targets: image,
-        scale: baseScale * 1.1,
+        scale: baseScale * 1.06,
         duration: RESOLUTION_STEP_MS / 2,
         yoyo: true,
         ease: 'Sine.easeInOut',
