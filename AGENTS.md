@@ -91,8 +91,12 @@ vs. lightweight path) and how per-feature status gets tracked in
   `web/node_modules/`) — regenerate it via the Commands below instead.
 - Never run `tools/asset-gen` without confirming with the user first — it
   costs real money per call.
-- No database exists yet, so no migration boundary applies — add one here
-  when a DB is introduced.
+- `server/app/db.py`'s `SCHEMA`/`init_db` is the only sanctioned place to
+  change the SQLite schema. There's no migration framework yet, so schema
+  changes must stay additive (`CREATE TABLE`/`ALTER TABLE ... ADD COLUMN`
+  guarded by existence checks, never a destructive change to an existing
+  table) until one is introduced. Never commit `server/data/*.db` (the
+  real database file — already covered by `.gitignore`).
 
 ## Commands
 
