@@ -1,0 +1,7 @@
+{
+  "visitor": {"affection": 3},
+  "good_mood": {"stress": -5},
+  "bad_mood": {"stress": 5},
+  "mishap": {"stress": 5, "discipline": -1},
+  "gift": {"affection": 2, "weight": 1}
+}

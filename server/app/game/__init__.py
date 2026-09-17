@@ -1,6 +1,8 @@
 from .activities import ACTIVITY_EFFECTS, Activity, apply_activity, effects_for
 from .delinquency import DELINQUENT_PENALTY, apply_delinquent_penalty
 from .diet import DIET_EFFECTS, Diet, apply_diet
+from .events import EVENT_CHANCE, EVENT_EFFECTS, Event, apply_event, roll_event
+from .festival import FESTIVAL_BONUS, FESTIVAL_MONTH, FESTIVAL_STATS, resolve_festival
 from .run import (
     FIRST_MONTH,
     MONTHS_PER_RUN,
@@ -31,6 +33,15 @@ __all__ = [
     "apply_overweight_penalty",
     "DELINQUENT_PENALTY",
     "apply_delinquent_penalty",
+    "EVENT_CHANCE",
+    "EVENT_EFFECTS",
+    "Event",
+    "apply_event",
+    "roll_event",
+    "FESTIVAL_MONTH",
+    "FESTIVAL_STATS",
+    "FESTIVAL_BONUS",
+    "resolve_festival",
     "GameRun",
     "GameRuleError",
     "RunFinishedError",

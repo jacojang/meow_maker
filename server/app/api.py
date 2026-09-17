@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import random
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -17,6 +18,7 @@ from .game import (
     RunFinishedError,
 )
 from .repository import GameRepository, get_game_repository
+from .rng import get_rng
 from .session import get_current_player
 
 router = APIRouter(prefix="/api")
@@ -68,6 +70,7 @@ def advance_game(
     payload: AdvanceRequest,
     player_id: str = Depends(get_current_player),
     repository: GameRepository = Depends(get_game_repository),
+    rng: random.Random = Depends(get_rng),
 ) -> dict[str, Any]:
     run = _load_run(repository, player_id)
     try:
@@ -79,7 +82,7 @@ def advance_game(
     try:
         run.assign_month(activities)
         run.assign_diet(diet)
-        run.advance_month()
+        run.advance_month(rng=rng)
     except RunFinishedError as error:
         raise HTTPException(status.HTTP_409_CONFLICT, str(error)) from error
     except IncompleteMonthError as error:

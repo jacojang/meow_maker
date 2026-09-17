@@ -8,8 +8,10 @@ from app.game import (
     Activity,
     CatStats,
     Diet,
+    Event,
     GameRun,
 )
+from app.rng import NeverRng
 
 
 def test_to_dict_is_plain_json_safe_data():
@@ -33,6 +35,8 @@ def test_to_dict_is_plain_json_safe_data():
         "finished": False,
         "slots": [None, "train", None],
         "diet": "normal",
+        "last_event": None,
+        "last_festival_winner": None,
     }
     assert json.loads(json.dumps(data)) == data
 
@@ -50,7 +54,7 @@ def test_round_trip_preserves_a_non_default_diet():
 def test_round_trip_preserves_a_run_in_progress():
     run = GameRun()
     run.assign_month([Activity.PLAY, Activity.TRAIN, Activity.REST])
-    run.advance_month()
+    run.advance_month(rng=NeverRng())
     run.assign_slot(0, Activity.GROOM)
 
     restored = GameRun.from_dict(json.loads(json.dumps(run.to_dict())))
@@ -62,7 +66,7 @@ def test_round_trip_preserves_a_run_in_progress():
 def test_round_trip_preserves_a_finished_run():
     run = GameRun(month=MONTHS_PER_RUN)
     run.assign_month([Activity.REST] * SLOTS_PER_MONTH)
-    run.advance_month()
+    run.advance_month(rng=NeverRng())
 
     restored = GameRun.from_dict(run.to_dict())
 
@@ -73,15 +77,35 @@ def test_round_trip_preserves_a_finished_run():
 def test_restored_run_keeps_playing_from_where_it_stopped():
     run = GameRun()
     run.assign_month([Activity.TRAIN] * SLOTS_PER_MONTH)
-    run.advance_month()
+    run.advance_month(rng=NeverRng())
 
     restored = GameRun.from_dict(run.to_dict())
     restored.assign_month([Activity.REST] * SLOTS_PER_MONTH)
-    restored.advance_month()
+    restored.advance_month(rng=NeverRng())
 
     assert restored.month == 3
     assert restored.stats.discipline == 25
     assert restored.stats.stress == 0
+
+
+def test_round_trip_preserves_a_recorded_event():
+    run = GameRun()
+    run.last_event = Event.GIFT
+
+    restored = GameRun.from_dict(json.loads(json.dumps(run.to_dict())))
+
+    assert restored.last_event is Event.GIFT
+
+
+def test_from_dict_defaults_last_event_and_festival_winner_when_absent():
+    data = GameRun().to_dict()
+    del data["last_event"]
+    del data["last_festival_winner"]
+
+    restored = GameRun.from_dict(data)
+
+    assert restored.last_event is None
+    assert restored.last_festival_winner is None
 
 
 def test_from_dict_rejects_incomplete_data():
