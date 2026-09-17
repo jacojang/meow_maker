@@ -2,9 +2,12 @@ from __future__ import annotations
 
 import secrets
 from abc import ABC, abstractmethod
+from datetime import UTC, datetime
 from uuid import uuid4
 
 from fastapi import Depends, Request
+
+from .db import connect, ensure_initialized, get_db_path
 
 SESSION_COOKIE_NAME = "meow_session"
 SESSION_COOKIE_MAX_AGE = 60 * 60 * 24 * 365
@@ -28,11 +31,30 @@ class InMemorySessionPlayers(SessionPlayers):
         return player_id
 
 
-_session_players = InMemorySessionPlayers()
+class SQLiteSessionPlayers(SessionPlayers):
+    def __init__(self, db_path: str) -> None:
+        self._db_path = db_path
+
+    def player_for(self, session_token: str) -> str:
+        with connect(self._db_path) as conn:
+            row = conn.execute(
+                "SELECT id FROM player WHERE session_id = ?", (session_token,)
+            ).fetchone()
+            if row is not None:
+                return row[0]
+
+            player_id = str(uuid4())
+            conn.execute(
+                "INSERT INTO player (id, session_id, created_at) VALUES (?, ?, ?)",
+                (player_id, session_token, datetime.now(UTC).isoformat()),
+            )
+        return player_id
 
 
 def get_session_players() -> SessionPlayers:
-    return _session_players
+    db_path = get_db_path()
+    ensure_initialized(db_path)
+    return SQLiteSessionPlayers(db_path)
 
 
 def get_current_player(

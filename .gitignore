@@ -223,3 +223,6 @@ __marimo__/
 # web/ (Vite + Phaser frontend)
 web/node_modules/
 web/dist/
+
+# server/ (FastAPI backend)
+server/data/
