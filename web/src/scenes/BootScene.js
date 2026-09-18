@@ -3,7 +3,7 @@ import { ALL_PORTRAIT_KEYS } from '../utils/portrait.js';
 
 const ACTIVITY_SCENE_IDS = ['play', 'train', 'groom', 'rest', 'educate', 'outing'];
 const SEASON_IDS = ['winter', 'spring', 'summer', 'autumn'];
-const FRAME_SUFFIXES = ['', '-b', '-c'];
+const FRAME_SUFFIXES = ['', '-b', '-c', '-d', '-e'];
 
 export class BootScene extends Phaser.Scene {
   constructor() {

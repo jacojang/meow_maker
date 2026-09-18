@@ -40,8 +40,8 @@ def parse_args() -> argparse.Namespace:
         choices=sorted(VALID_BACKGROUNDS),
         help="'transparent' requires PNG output (the default --out extension)",
     )
-    parser.add_argument("--model", default="gpt-image-1", help="Image model to use")
-    parser.add_argument("--quality", default="auto", choices=sorted(VALID_QUALITIES))
+    parser.add_argument("--model", default="gpt-image-2.5-flare", help="Image model to use")
+    parser.add_argument("--quality", default="low", choices=sorted(VALID_QUALITIES))
     return parser.parse_args()
 
 
