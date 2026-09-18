@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { daySlots } from '../utils/calendar.js';
 import { calendarWeeks, WEEKDAY_LABELS } from '../utils/calendarGrid.js';
 import { coverScale } from '../utils/coverScale.js';
-import { dateForDay, daysInMonth, formatDate } from '../utils/gameCalendar.js';
+import { dateForDay, daysInMonth, formatDate, seasonForMonth } from '../utils/gameCalendar.js';
 import { gameApi } from '../utils/gameApi.js';
 import { fitStep } from '../utils/layout.js';
 import { portraitKey } from '../utils/portrait.js';
@@ -355,13 +355,31 @@ export class GameScene extends Phaser.Scene {
       fontStyle: 'bold',
     }).setOrigin(0.5, 0);
 
-    const textureKey = `cat-${portraitKey(this.state.stats, this.state.is_sick)}`;
-    if (!this.textures.exists(textureKey)) return;
-
     const areaTop = TOP_PANEL_Y + 40;
     const areaHeight = TOP_PANEL_HEIGHT - 52;
     const areaWidth = COLUMN_WIDTH - 24;
-    const image = this.add.image(x + COLUMN_WIDTH / 2, areaTop + areaHeight / 2, textureKey);
+    const areaLeft = x + 12;
+    const areaCenterX = x + COLUMN_WIDTH / 2;
+    const areaCenterY = areaTop + areaHeight / 2;
+
+    const seasonKey = `season-${seasonForMonth(this.state.month)}`;
+    if (this.textures.exists(seasonKey)) {
+      const bg = this.add.image(areaCenterX, areaCenterY, seasonKey);
+      bg.setScale(coverScale(areaWidth, areaHeight, bg.width, bg.height));
+      this.ui.add(bg);
+
+      const maskShape = this.add.graphics();
+      maskShape.fillStyle(0xffffff);
+      maskShape.fillRect(areaLeft, areaTop, areaWidth, areaHeight);
+      maskShape.setVisible(false);
+      this.ui.add(maskShape);
+      bg.setMask(maskShape.createGeometryMask());
+    }
+
+    const textureKey = `cat-${portraitKey(this.state.stats, this.state.is_sick)}`;
+    if (!this.textures.exists(textureKey)) return;
+
+    const image = this.add.image(areaCenterX, areaCenterY, textureKey);
     image.setScale(Math.min(areaWidth / image.width, areaHeight / image.height));
     this.ui.add(image);
   }

@@ -81,6 +81,21 @@ User feedback on the current UI/UX ("정말 맘에 들지 않거든"), four asks
    `http://54.116.51.0:8000` after deploy.
 3. **Seasonal status backgrounds** — 4 new illustrations, one per season,
    behind the existing cat portrait in the status panel. Needs asset-gen.
+   **Done** — 4 illustrations generated via `tools/asset-gen`
+   (`web/public/assets/seasons/season-{winter,spring,summer,autumn}.jpg`),
+   plain/minimal compositions (no characters) matching the existing
+   portrait art's flat style, so they don't compete visually with the cat
+   in the small status panel. `BootScene.js` preloads them
+   (`season-<id>`); `GameScene.js`'s `renderPortrait()` draws the season
+   image (picked via `seasonForMonth(this.state.month)`, already written
+   and tested in part 1) as a cover-fit background clipped to the status
+   panel's content area with a geometry mask, then draws the existing cat
+   portrait on top unchanged — the cat image only fills part of the area
+   (contain-fit), so the season art is visible in the margins around it.
+   No new mechanic, no new tests (pure wiring over an already-tested
+   function); verified live in browser for winter and spring, including
+   alongside the sick-cat portrait variant and the stress badge, with no
+   layout regression.
 4. **Day-by-day motion animation** — the resolution vignette steps through
    each day in the activity's range (ticking the header date once per day)
    while ping-ponging between that activity's 3 motion frames, instead of
