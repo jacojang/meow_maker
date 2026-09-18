@@ -13,6 +13,7 @@ import { addFullscreenButton } from './fullscreenButton.js';
 const RESOLUTION_STEP_MS = 700;
 const RESOLUTION_DAY_MS = 200;
 const PORTRAIT_SCALE = 0.8;
+const PORTRAIT_GROUND_MARGIN = 6;
 const FRAME_SUFFIXES = ['', '-b', '-c'];
 const FRAME_PING_PONG = [0, 1, 2, 1];
 const DIET_VIGNETTE_COLOR = 0x8a8f4d;
@@ -400,9 +401,10 @@ export class GameScene extends Phaser.Scene {
     const textureKey = `cat-${portraitKey(this.state.stats, this.state.is_sick)}`;
     if (!this.textures.exists(textureKey)) return;
 
-    const image = this.add.image(areaCenterX, areaCenterY, textureKey);
+    const image = this.add.image(areaCenterX, areaTop + areaHeight - PORTRAIT_GROUND_MARGIN, textureKey);
     const containScale = Math.min(areaWidth / image.width, areaHeight / image.height);
     image.setScale(containScale * PORTRAIT_SCALE);
+    image.setOrigin(0.5, 1);
     this.ui.add(image);
   }
 
