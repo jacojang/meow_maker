@@ -1,5 +1,5 @@
 ---
-status: review
+status: deployed
 updated: 2026-09-18
 ---
 
@@ -157,6 +157,8 @@ since lossless PNG-with-alpha is a genuinely different format requirement,
 not the same bloat problem as parts 3/4's oversized JPGs. Verified live:
 the fireplace's silhouette is now visible right up to the cat's edge in
 winter, and the sick-portrait variant also composites cleanly over spring.
+Merged (#40) and deployed to production; re-verified live at
+`http://54.116.51.0:8000` after deploy.
 
 ## Why this order
 
