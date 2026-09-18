@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
 import { daySlots } from '../utils/calendar.js';
+import { calendarWeeks, WEEKDAY_LABELS } from '../utils/calendarGrid.js';
 import { coverScale } from '../utils/coverScale.js';
+import { dateForDay, daysInMonth, formatDate } from '../utils/gameCalendar.js';
 import { gameApi } from '../utils/gameApi.js';
 import { fitStep } from '../utils/layout.js';
 import { portraitKey } from '../utils/portrait.js';
@@ -8,7 +10,6 @@ import { resolutionSteps } from '../utils/resolutionSteps.js';
 import { STAT_NAMES, formatDelta, statDeltas } from '../utils/statDeltas.js';
 import { addFullscreenButton } from './fullscreenButton.js';
 
-const DAYS_PER_MONTH = 30;
 const RESOLUTION_STEP_MS = 700;
 const DIET_VIGNETTE_COLOR = 0x8a8f4d;
 
@@ -218,7 +219,7 @@ export class GameScene extends Phaser.Scene {
 
   buildResolutionSteps() {
     return resolutionSteps(
-      DAYS_PER_MONTH,
+      daysInMonth(this.state.month),
       this.picks,
       this.activities,
       this.dietPick,
@@ -288,8 +289,10 @@ export class GameScene extends Phaser.Scene {
 
     if (!this.state) return;
 
-    const monthLabel = `${this.state.month} / ${this.state.months_per_run}`;
-    this.text(CANVAS_WIDTH - 24, 18, `${monthLabel} 개월`, {
+    const displayDate = this.state.finished
+      ? dateForDay(this.state.month, daysInMonth(this.state.month))
+      : dateForDay(this.state.month, 1);
+    this.text(CANVAS_WIDTH - 24, 18, formatDate(displayDate), {
       fontSize: '24px',
       fontStyle: 'bold',
       color: '#ffd479',
@@ -456,49 +459,87 @@ export class GameScene extends Phaser.Scene {
     this.panel(x, PICKER_Y, width, PICKER_HEIGHT);
     this.text(x + 16, PICKER_Y + 10, '이번 달 일정', { fontStyle: 'bold' });
 
-    const slots = daySlots(DAYS_PER_MONTH, this.picks.length);
-    const labelWidth = 132;
-    const cellGap = 3;
-    const rowsTop = PICKER_Y + 40;
-    const rowHeight = Math.min(32, (this.calendarChoicesY() - 8 - rowsTop) / slots.length);
+    this.renderCalendarLegend(x, width);
+    this.renderCalendarWeekdayHeader(x, width);
+    this.renderCalendarGrid(x, width);
+  }
 
-    slots.forEach((range, slot) => {
-      const y = rowsTop + slot * rowHeight;
+  renderCalendarLegend(x, width) {
+    const ranges = daySlots(daysInMonth(this.state.month), this.picks.length);
+    const y = PICKER_Y + 38;
+    const gap = 8;
+    const chipWidth = (width - 32 - gap * (ranges.length - 1)) / ranges.length;
+
+    ranges.forEach((range, slot) => {
       const pick = this.picks[slot];
       const focused = this.focusedSlot === slot;
-      const cellsWidth = width - 32 - labelWidth;
-      const cellWidth = (cellsWidth - cellGap * (range.days.length - 1)) / range.days.length;
+      const chipX = x + 16 + slot * (chipWidth + gap);
+
+      const swatch = this.add
+        .rectangle(chipX, y, 10, 10, activityColor(pick), 1)
+        .setOrigin(0, 0.5);
+      this.ui.add(swatch);
 
       const label = this.text(
-        x + 16,
-        y + (rowHeight - 6) / 2,
-        `${range.start}~${range.end}일  ${activityLabel(pick)}`,
+        chipX + 16,
+        y,
+        `${range.start}~${range.end}일 ${activityLabel(pick)}`,
         {
-          fontSize: '13px',
+          fontSize: '12px',
           color: focused ? '#ffd479' : '#cfd2e6',
           fontStyle: focused ? 'bold' : 'normal',
         },
       ).setOrigin(0, 0.5);
       label.setInteractive({ useHandCursor: true });
       label.on('pointerdown', () => this.focusSlot(slot));
+    });
+  }
 
-      range.days.forEach((day, index) => {
-        const cellX = x + 16 + labelWidth + index * (cellWidth + cellGap);
+  renderCalendarWeekdayHeader(x, width) {
+    const y = PICKER_Y + 58;
+    const cellWidth = (width - 32) / 7;
+
+    WEEKDAY_LABELS.forEach((label, index) => {
+      this.text(x + 16 + index * cellWidth + cellWidth / 2, y, label, {
+        fontSize: '11px',
+        color: index === 0 ? '#e08a8a' : '#9ea1c2',
+      }).setOrigin(0.5);
+    });
+  }
+
+  renderCalendarGrid(x, width) {
+    const ranges = daySlots(daysInMonth(this.state.month), this.picks.length);
+    const weeks = calendarWeeks(this.state.month, ranges);
+    const cellGap = 2;
+    const cellWidth = (width - 32) / 7;
+    const rowsTop = PICKER_Y + 72;
+    const rowHeight = fitStep(weeks.length, 22, this.calendarChoicesY() - 8 - rowsTop);
+
+    weeks.forEach((week, rowIndex) => {
+      const y = rowsTop + rowIndex * rowHeight;
+
+      week.forEach((cell, colIndex) => {
+        if (!cell) return;
+        const slot = cell.slotIndex;
+        const pick = this.picks[slot];
+        const focused = this.focusedSlot === slot;
+        const cellX = x + 16 + colIndex * cellWidth;
         const fill = activityColor(pick);
-        const cell = this.add
-          .rectangle(cellX, y, cellWidth, rowHeight - 6, fill, focused ? 1 : 0.5)
+
+        const box = this.add
+          .rectangle(cellX, y, cellWidth - cellGap, rowHeight - cellGap, fill, focused ? 1 : 0.5)
           .setOrigin(0, 0)
           .setStrokeStyle(focused ? 2 : 1, 0xffffff, focused ? 0.9 : 0.25);
-        this.ui.add(cell);
-        this.text(cellX + cellWidth / 2, y + (rowHeight - 6) / 2, `${day}`, {
+        this.ui.add(box);
+        this.text(cellX + (cellWidth - cellGap) / 2, y + (rowHeight - cellGap) / 2, `${cell.day}`, {
           fontSize: '10px',
           color: '#10111c',
         }).setOrigin(0.5);
 
-        cell.setInteractive({ useHandCursor: true });
-        cell.on('pointerover', () => cell.setFillStyle(fill, 1));
-        cell.on('pointerout', () => cell.setFillStyle(fill, focused ? 1 : 0.5));
-        cell.on('pointerdown', () => this.focusSlot(slot));
+        box.setInteractive({ useHandCursor: true });
+        box.on('pointerover', () => box.setFillStyle(fill, 1));
+        box.on('pointerout', () => box.setFillStyle(fill, focused ? 1 : 0.5));
+        box.on('pointerdown', () => this.focusSlot(slot));
       });
     });
   }
