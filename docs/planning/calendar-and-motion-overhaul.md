@@ -1,5 +1,5 @@
 ---
-status: review
+status: deployed
 updated: 2026-09-18
 ---
 
@@ -278,7 +278,8 @@ bare trees, the `101 102` sign, the bench) with a properly-sized cat
 grounded on the path; March/spring shows the same scene in full cherry
 blossom bloom, correctly composing with the sick-cat portrait variant and
 stress badge, with no layout overlap anywhere (calendar grid, month
-summary message, play button).
+summary message, play button). Merged (#46) and deployed to production;
+re-verified live at `http://54.116.51.0:8000` after deploy.
 
 ## Why this order
 
