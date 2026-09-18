@@ -151,6 +151,8 @@ def test_playing_every_month_finishes_the_run(client):
         assert state["month"] == min(month + 1, MONTHS_PER_RUN)
 
     assert state["finished"] is True
+    assert state["ending"] is not None
+    assert state["score"] is not None
 
     rejected = advance(client, ["rest", "rest", "rest"])
     assert rejected.status_code == 409

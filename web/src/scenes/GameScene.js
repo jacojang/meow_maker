@@ -54,6 +54,16 @@ const DIET_LABELS = {
   hearty: '든든하게',
 };
 
+const ENDING_LABELS = {
+  neglected: '방치된 고양이',
+  delinquent: '말썽꾸러기 고양이',
+  healthy: '튼튼한 고양이',
+  beloved: '사랑받는 고양이',
+  disciplined: '모범생 고양이',
+  curious: '호기심 많은 탐험가',
+  refined: '우아한 고양이',
+};
+
 const ACTIVITY_COLORS = {
   play: 0xdc8a3c,
   train: 0x3c6fdc,
@@ -86,6 +96,10 @@ function activityLabel(id) {
 
 function dietLabel(id) {
   return DIET_LABELS[id] ?? id;
+}
+
+function endingLabel(id) {
+  return ENDING_LABELS[id] ?? id;
 }
 
 function activityColor(id) {
@@ -641,23 +655,28 @@ export class GameScene extends Phaser.Scene {
     const width = CANVAS_WIDTH - 48;
     this.panel(x, PICKER_Y, width, PICKER_HEIGHT);
 
-    this.text(x + 24, PICKER_Y + 28, '육성을 마쳤습니다', {
-      fontSize: '30px',
+    this.text(x + 24, PICKER_Y + 16, '육성을 마쳤습니다', {
+      fontSize: '24px',
       fontStyle: 'bold',
       color: '#ffd479',
     });
-    this.text(
-      x + 24,
-      PICKER_Y + 80,
-      `${this.state.months_per_run}개월을 모두 보냈습니다.`,
-      { fontSize: '18px', color: '#cfd2e6' },
-    );
+
+    this.text(x + 24, PICKER_Y + 52, endingLabel(this.state.ending), {
+      fontSize: '30px',
+      fontStyle: 'bold',
+      color: '#8ce3a5',
+    });
+    this.text(x + 24, PICKER_Y + 90, `점수 ${this.state.score} / 1000`, {
+      fontSize: '18px',
+      fontStyle: 'bold',
+      color: '#cfd2e6',
+    });
 
     const summary = STAT_NAMES.map(
       (stat) => `${statLabel(stat)} ${this.state.stats[stat]}`,
     ).join('   ');
-    this.text(x + 24, PICKER_Y + 124, summary, {
-      fontSize: '20px',
+    this.text(x + 24, PICKER_Y + 130, summary, {
+      fontSize: '18px',
       fontStyle: 'bold',
       wordWrap: { width: width - 48 },
     });

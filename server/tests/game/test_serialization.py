@@ -8,6 +8,7 @@ from app.game import (
     Activity,
     CatStats,
     Diet,
+    Ending,
     Event,
     GameRun,
 )
@@ -37,6 +38,8 @@ def test_to_dict_is_plain_json_safe_data():
         "diet": "normal",
         "last_event": None,
         "last_festival_winner": None,
+        "ending": None,
+        "score": None,
     }
     assert json.loads(json.dumps(data)) == data
 
@@ -71,6 +74,8 @@ def test_round_trip_preserves_a_finished_run():
     restored = GameRun.from_dict(run.to_dict())
 
     assert restored.finished is True
+    assert restored.ending is not None
+    assert restored.score is not None
     assert restored == run
 
 
@@ -106,6 +111,28 @@ def test_from_dict_defaults_last_event_and_festival_winner_when_absent():
 
     assert restored.last_event is None
     assert restored.last_festival_winner is None
+
+
+def test_round_trip_preserves_an_ending_and_score():
+    run = GameRun()
+    run.ending = Ending.BELOVED
+    run.score = 742
+
+    restored = GameRun.from_dict(json.loads(json.dumps(run.to_dict())))
+
+    assert restored.ending is Ending.BELOVED
+    assert restored.score == 742
+
+
+def test_from_dict_defaults_ending_and_score_when_absent():
+    data = GameRun().to_dict()
+    del data["ending"]
+    del data["score"]
+
+    restored = GameRun.from_dict(data)
+
+    assert restored.ending is None
+    assert restored.score is None
 
 
 def test_from_dict_rejects_incomplete_data():

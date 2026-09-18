@@ -10,8 +10,10 @@ from app.game import (
     Activity,
     CatStats,
     Diet,
+    Ending,
     Event,
     GameRun,
+    compute_score,
     IncompleteMonthError,
     RunFinishedError,
 )
@@ -141,10 +143,24 @@ def test_run_finishes_after_twelve_months():
     for month in range(1, MONTHS_PER_RUN + 1):
         assert run.month == month
         assert run.finished is False
+        assert run.ending is None
+        assert run.score is None
         play_month(run, Activity.REST, Activity.REST, Activity.REST)
 
     assert run.month == MONTHS_PER_RUN
     assert run.finished is True
+    assert run.ending is not None
+    assert run.score is not None
+
+
+def test_ending_and_score_are_set_exactly_once_on_the_final_month():
+    run = GameRun(month=MONTHS_PER_RUN)
+
+    play_month(run, Activity.REST, Activity.REST, Activity.REST)
+
+    assert run.finished is True
+    assert run.ending is Ending.HEALTHY
+    assert run.score == compute_score(run.stats)
 
 
 def test_advancing_past_the_end_is_rejected():
