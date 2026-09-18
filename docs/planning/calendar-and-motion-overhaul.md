@@ -76,7 +76,9 @@ User feedback on the current UI/UX ("정말 맘에 들지 않거든"), four asks
    2026-01-01), February renders 4 rows starting on Sunday with 28 days
    and no padding, and clicking a day / legend chip still focuses the
    right slot and recolors only that slot's days, including across a
-   week-row boundary (e.g. an 11-20 slot spanning two grid rows).
+   week-row boundary (e.g. an 11-20 slot spanning two grid rows). Merged
+   (#36) and deployed to production; re-verified live at
+   `http://54.116.51.0:8000` after deploy.
 3. **Seasonal status backgrounds** — 4 new illustrations, one per season,
    behind the existing cat portrait in the status panel. Needs asset-gen.
 4. **Day-by-day motion animation** — the resolution vignette steps through
