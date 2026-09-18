@@ -1,5 +1,5 @@
 ---
-status: deployed
+status: review
 updated: 2026-09-18
 ---
 
@@ -193,6 +193,30 @@ full within the panel, with the smaller cat sitting naturally inside the
 scene instead of dominating a heavily-cropped square. Merged (#42) and
 deployed to production; re-verified live at `http://54.116.51.0:8000`
 after deploy.
+
+## Follow-up: ground-anchor the cat portrait
+
+Fixing the aspect ratio (previous follow-up) made the backgrounds much
+richer, but it surfaced a third issue: the cat portrait was still
+vertically centered in the content area regardless of where each
+background's actual floor/ground line sits, so the cat visually floated
+disconnected from the scene — unlike `opening-background.jpg`, where the
+character and cat are composited standing on the ground.
+
+Fix, in `GameScene.js`'s `renderPortrait()`: instead of centering the cat
+image vertically, it's now anchored to the bottom of the content area — a
+new `PORTRAIT_GROUND_MARGIN = 6` constant, with `image.setOrigin(0.5, 1)`
+and its Y position set to `areaTop + areaHeight - PORTRAIT_GROUND_MARGIN`
+(horizontal centering unchanged). This isn't pixel-perfect floor alignment
+per season (each of the 4 backgrounds has its ground line at a different
+height — winter's floor is near the very bottom, spring's grass starts
+partway up), but bottom-anchoring reads as "standing on the ground" for
+all of them, since every background has visible ground/floor in its lower
+portion. No background art changed, no per-season code branching — a
+single shared anchor rule. Verified live: winter's cat now sits directly
+in front of the fireplace at floor level; spring's cat sits in the grass
+with blossom branches framing above — both read as grounded in the scene
+instead of floating in a dead-center box.
 
 ## Why this order
 
