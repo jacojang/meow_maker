@@ -8,6 +8,7 @@ from typing import Any
 from .activities import Activity, apply_activity
 from .delinquency import apply_delinquent_penalty
 from .diet import Diet, apply_diet
+from .endings import Ending, compute_score, determine_ending
 from .events import Event, apply_event, roll_event
 from .festival import FESTIVAL_MONTH, resolve_festival
 from .stats import CatStats
@@ -44,6 +45,8 @@ class GameRun:
     diet: Diet = Diet.NORMAL
     last_event: Event | None = None
     last_festival_winner: str | None = None
+    ending: Ending | None = None
+    score: int | None = None
 
     def __post_init__(self) -> None:
         if not FIRST_MONTH <= self.month <= MONTHS_PER_RUN:
@@ -106,6 +109,8 @@ class GameRun:
         self.slots = _empty_slots()
         if self.month == MONTHS_PER_RUN:
             self.finished = True
+            self.ending = determine_ending(self.stats)
+            self.score = compute_score(self.stats)
         else:
             self.month += 1
 
@@ -122,6 +127,8 @@ class GameRun:
             "diet": self.diet.value,
             "last_event": None if self.last_event is None else self.last_event.value,
             "last_festival_winner": self.last_festival_winner,
+            "ending": None if self.ending is None else self.ending.value,
+            "score": self.score,
         }
 
     @classmethod
@@ -131,6 +138,7 @@ class GameRun:
             raise ValueError(f"missing keys: {missing}")
         slots = data["slots"]
         last_event = data.get("last_event")
+        ending = data.get("ending")
         return cls(
             stats=CatStats.from_dict(data["stats"]),
             month=int(data["month"]),
@@ -139,4 +147,6 @@ class GameRun:
             diet=Diet(data["diet"]),
             last_event=None if last_event is None else Event(last_event),
             last_festival_winner=data.get("last_festival_winner"),
+            ending=None if ending is None else Ending(ending),
+            score=data.get("score"),
         )

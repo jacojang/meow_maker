@@ -1,6 +1,7 @@
 from .activities import ACTIVITY_EFFECTS, Activity, apply_activity, effects_for
 from .delinquency import DELINQUENT_PENALTY, apply_delinquent_penalty
 from .diet import DIET_EFFECTS, Diet, apply_diet
+from .endings import SCORE_MAX, Ending, compute_score, determine_ending
 from .events import EVENT_CHANCE, EVENT_EFFECTS, Event, apply_event, roll_event
 from .festival import FESTIVAL_BONUS, FESTIVAL_MONTH, FESTIVAL_STATS, resolve_festival
 from .run import (
@@ -42,6 +43,10 @@ __all__ = [
     "FESTIVAL_STATS",
     "FESTIVAL_BONUS",
     "resolve_festival",
+    "SCORE_MAX",
+    "Ending",
+    "determine_ending",
+    "compute_score",
     "GameRun",
     "GameRuleError",
     "RunFinishedError",
