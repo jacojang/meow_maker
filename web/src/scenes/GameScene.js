@@ -12,24 +12,25 @@ import { addFullscreenButton } from './fullscreenButton.js';
 
 const RESOLUTION_STEP_MS = 700;
 const RESOLUTION_DAY_MS = 200;
-const PORTRAIT_SCALE = 0.8;
+const PORTRAIT_SCALE = 0.4;
 const PORTRAIT_GROUND_MARGIN = 6;
 const FRAME_SUFFIXES = ['', '-b', '-c'];
 const FRAME_PING_PONG = [0, 1, 2, 1];
 const DIET_VIGNETTE_COLOR = 0x8a8f4d;
 
 const CANVAS_WIDTH = 960;
-const CANVAS_HEIGHT = 600;
+const CANVAS_HEIGHT = 750;
 
 const COLUMN_X = [24, 504];
 const COLUMN_WIDTH = 432;
 const TOP_PANEL_Y = 80;
-const TOP_PANEL_HEIGHT = 208;
-const PICKER_Y = 304;
+const TOP_PANEL_HEIGHT = 358;
+const PICKER_Y = 454;
 const PICKER_HEIGHT = 216;
 
 const PICKER_COLUMN_X = [24, 256, 488, 720];
 const PICKER_COLUMN_WIDTH = 216;
+const PLAY_BUTTON_Y = 710;
 
 const PANEL_FILL = 0x11121f;
 const PANEL_ALPHA = 0.85;
@@ -340,7 +341,7 @@ export class GameScene extends Phaser.Scene {
     this.text(x + 16, TOP_PANEL_Y + 12, '능력치', { fontStyle: 'bold' });
     this.renderActivityInfoButton(x + COLUMN_WIDTH - 28, TOP_PANEL_Y + 22);
 
-    const step = fitStep(STAT_NAMES.length, 34, TOP_PANEL_HEIGHT - 58);
+    const step = fitStep(STAT_NAMES.length, 44, TOP_PANEL_HEIGHT - 58);
     STAT_NAMES.forEach((stat, index) => {
       const y = TOP_PANEL_Y + 44 + index * step;
       const value = this.state.stats[stat];
@@ -716,10 +717,10 @@ export class GameScene extends Phaser.Scene {
     const fill = enabled ? 0x3f7d5a : 0x3a3c4f;
 
     const button = this.add
-      .rectangle(CANVAS_WIDTH / 2, 560, 280, 48, fill, 1)
+      .rectangle(CANVAS_WIDTH / 2, PLAY_BUTTON_Y, 280, 48, fill, 1)
       .setStrokeStyle(2, 0xffffff, 0.6);
     this.ui.add(button);
-    this.text(CANVAS_WIDTH / 2, 560, label, {
+    this.text(CANVAS_WIDTH / 2, PLAY_BUTTON_Y, label, {
       fontSize: '22px',
       fontStyle: 'bold',
     }).setOrigin(0.5);
@@ -768,7 +769,7 @@ export class GameScene extends Phaser.Scene {
     const text = this.message || this.lastMonthSummary();
     if (!text) return;
 
-    this.text(CANVAS_WIDTH / 2, 526, text, {
+    this.text(CANVAS_WIDTH / 2, PICKER_Y + PICKER_HEIGHT + 6, text, {
       fontSize: '16px',
       color: isError ? '#ffd7d7' : '#cfd2e6',
       backgroundColor: isError ? '#5a1111' : '#1c1e33',
