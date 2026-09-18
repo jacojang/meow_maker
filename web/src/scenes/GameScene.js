@@ -14,8 +14,8 @@ const RESOLUTION_STEP_MS = 700;
 const RESOLUTION_DAY_MS = 200;
 const PORTRAIT_SCALE = 0.4;
 const PORTRAIT_GROUND_MARGIN = 6;
-const FRAME_SUFFIXES = ['', '-b', '-c'];
-const FRAME_PING_PONG = [0, 1, 2, 1];
+const FRAME_SUFFIXES = ['', '-b', '-c', '-d', '-e'];
+const FRAME_PING_PONG = [0, 1, 2, 3, 4, 3, 2, 1];
 const DIET_VIGNETTE_COLOR = 0x8a8f4d;
 
 const CANVAS_WIDTH = 960;
