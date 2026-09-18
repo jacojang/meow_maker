@@ -13,7 +13,7 @@ export class BootScene extends Phaser.Scene {
   preload() {
     this.load.image('opening-bg', 'assets/opening-background.jpg');
     ALL_PORTRAIT_KEYS.forEach((key) => {
-      this.load.image(`cat-${key}`, `assets/cats/cat-${key}.jpg`);
+      this.load.image(`cat-${key}`, `assets/cats/cat-${key}.png`);
     });
     ACTIVITY_SCENE_IDS.forEach((id) => {
       FRAME_SUFFIXES.forEach((suffix) => {
