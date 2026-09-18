@@ -1,5 +1,5 @@
 ---
-status: review
+status: deployed
 updated: 2026-09-18
 ---
 
@@ -216,7 +216,8 @@ portion. No background art changed, no per-season code branching — a
 single shared anchor rule. Verified live: winter's cat now sits directly
 in front of the fireplace at floor level; spring's cat sits in the grass
 with blossom branches framing above — both read as grounded in the scene
-instead of floating in a dead-center box.
+instead of floating in a dead-center box. Merged (#44) and deployed to
+production; re-verified live at `http://54.116.51.0:8000` after deploy.
 
 ## Why this order
 
