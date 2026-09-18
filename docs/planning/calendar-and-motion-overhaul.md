@@ -1,5 +1,5 @@
 ---
-status: coding
+status: review
 updated: 2026-09-18
 ---
 
@@ -95,12 +95,39 @@ User feedback on the current UI/UX ("정말 맘에 들지 않거든"), four asks
    No new mechanic, no new tests (pure wiring over an already-tested
    function); verified live in browser for winter and spring, including
    alongside the sick-cat portrait variant and the stress badge, with no
-   layout regression.
+   layout regression. Merged (#38) and deployed to production; re-verified
+   live at `http://54.116.51.0:8000` after deploy.
 4. **Day-by-day motion animation** — the resolution vignette steps through
    each day in the activity's range (ticking the header date once per day)
    while ping-ponging between that activity's 3 motion frames, instead of
    one static image for the whole slot. Needs asset-gen (13 frames) and the
-   biggest animation-loop rework of the four.
+   biggest animation-loop rework of the four. **Done** — 13 new frames
+   generated via `tools/asset-gen` (2 extra poses for each of the 5
+   existing activities, reusing their existing frame as pose A; a full new
+   3-pose set for outing, which had no art yet), resized/recompressed to
+   the same 640x640/~100KB convention as every other scene image (learned
+   from part 3's review). `resolutionSteps.js` now carries each activity
+   step's real `days` array (from the existing `daySlots` ranges) so
+   playback can iterate real days — one new field, existing pure-function
+   contract, test updated accordingly. `GameScene.js`'s
+   `playResolutionAnimation()` now loops each activity step's real days
+   (`RESOLUTION_DAY_MS` = 200ms/day) instead of holding one static frame
+   for `RESOLUTION_STEP_MS`; each day picks a frame via a 4-value
+   ping-pong pattern (`[0,1,2,1]`) mapped to `scene-<id>`, `scene-<id>-b`,
+   `scene-<id>-c`. The old scale-pulse tween is gone — replaced entirely
+   by the frame swap, per the user's explicit ask (movement, not
+   resizing). The header (`renderHeader`) shows the real ticking date
+   during animation via a new `this.animationDay`, falling back to day 1
+   (in progress) or the month's last day (finished) otherwise — same
+   `dateForDay`/`formatDate` from part 1. The diet step (no day range)
+   keeps its original single-frame hold, unchanged. `BootScene.js`
+   preloads all 3 frames for all 6 activities (fixing a pre-existing gap
+   where `outing` wasn't in the preload list at all, from before it had
+   any art). Verified live end-to-end: an outing month's resolution shows
+   the header ticking `2026/01/01` → `2026/01/16` day by day, the cat/girl
+   pose visibly cycling frame-to-frame, correctly lands on `2026/02/01`
+   after the month completes, and the resulting stats match the outing
+   success-roll math exactly as before.
 
 ## Why this order
 

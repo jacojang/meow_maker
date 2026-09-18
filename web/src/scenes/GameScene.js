@@ -11,6 +11,9 @@ import { STAT_NAMES, formatDelta, statDeltas } from '../utils/statDeltas.js';
 import { addFullscreenButton } from './fullscreenButton.js';
 
 const RESOLUTION_STEP_MS = 700;
+const RESOLUTION_DAY_MS = 200;
+const FRAME_SUFFIXES = ['', '-b', '-c'];
+const FRAME_PING_PONG = [0, 1, 2, 1];
 const DIET_VIGNETTE_COLOR = 0x8a8f4d;
 
 const CANVAS_WIDTH = 960;
@@ -148,6 +151,8 @@ export class GameScene extends Phaser.Scene {
     this.animating = false;
     this.animationSteps = [];
     this.animationIndex = 0;
+    this.animationDay = null;
+    this.animationFrameIndex = 0;
     this.showActivityInfo = false;
   }
 
@@ -243,8 +248,21 @@ export class GameScene extends Phaser.Scene {
     for (let index = 0; index < this.animationSteps.length; index += 1) {
       if (!this.alive) return;
       this.animationIndex = index;
-      this.render();
-      await this.delay(RESOLUTION_STEP_MS);
+      const step = this.animationSteps[index];
+
+      if (step.kind === 'activity' && step.days.length > 0) {
+        for (let dayPos = 0; dayPos < step.days.length; dayPos += 1) {
+          if (!this.alive) return;
+          this.animationDay = step.days[dayPos];
+          this.animationFrameIndex = FRAME_PING_PONG[dayPos % FRAME_PING_PONG.length];
+          this.render();
+          await this.delay(RESOLUTION_DAY_MS);
+        }
+      } else {
+        this.animationFrameIndex = 0;
+        this.render();
+        await this.delay(RESOLUTION_STEP_MS);
+      }
     }
     this.animating = false;
   }
@@ -289,9 +307,11 @@ export class GameScene extends Phaser.Scene {
 
     if (!this.state) return;
 
-    const displayDate = this.state.finished
-      ? dateForDay(this.state.month, daysInMonth(this.state.month))
-      : dateForDay(this.state.month, 1);
+    const displayDate = this.animating && this.animationDay
+      ? dateForDay(this.state.month, this.animationDay)
+      : this.state.finished
+        ? dateForDay(this.state.month, daysInMonth(this.state.month))
+        : dateForDay(this.state.month, 1);
     this.text(CANVAS_WIDTH - 24, 18, formatDate(displayDate), {
       fontSize: '24px',
       fontStyle: 'bold',
@@ -618,10 +638,11 @@ export class GameScene extends Phaser.Scene {
     if (!step) return;
 
     this.panel(x, PICKER_Y, width, PICKER_HEIGHT);
+    const dayLabel = this.animationDay ? ` · ${this.animationDay}일` : '';
     this.text(
       x + 16,
       PICKER_Y + 10,
-      `한 달을 보내는 중… (${this.animationIndex + 1}/${this.animationSteps.length})`,
+      `한 달을 보내는 중… (${this.animationIndex + 1}/${this.animationSteps.length})${dayLabel}`,
       { fontStyle: 'bold', color: '#ffd479' },
     );
 
@@ -636,24 +657,18 @@ export class GameScene extends Phaser.Scene {
         .setStrokeStyle(2, 0xffffff, 0.6),
     );
 
-    if (this.textures.exists(step.textureKey)) {
+    const frameSuffix = step.kind === 'activity' ? FRAME_SUFFIXES[this.animationFrameIndex] : '';
+    const textureKey = `${step.textureKey}${frameSuffix}`;
+    if (this.textures.exists(textureKey)) {
       const areaWidth = vignetteWidth - 16;
       const areaHeight = vignetteHeight - 36;
       const image = this.add.image(
         vignetteX + vignetteWidth / 2,
         vignetteY + areaHeight / 2,
-        step.textureKey,
+        textureKey,
       );
-      const baseScale = Math.min(areaWidth / image.width, areaHeight / image.height);
-      image.setScale(baseScale);
+      image.setScale(Math.min(areaWidth / image.width, areaHeight / image.height));
       this.ui.add(image);
-      this.tweens.add({
-        targets: image,
-        scale: baseScale * 1.06,
-        duration: RESOLUTION_STEP_MS / 2,
-        yoyo: true,
-        ease: 'Sine.easeInOut',
-      });
     }
 
     this.text(vignetteX + vignetteWidth / 2, vignetteY + vignetteHeight - 14, step.label, {

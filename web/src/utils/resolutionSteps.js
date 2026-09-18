@@ -11,6 +11,7 @@ export function resolutionSteps(daysPerMonth, picks, activities, dietId, diets) 
       kind: 'activity',
       title: `${range.start}~${range.end}일`,
       effects: activity ? activity.effects : {},
+      days: range.days,
     };
   });
 

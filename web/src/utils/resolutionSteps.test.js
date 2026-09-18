@@ -43,6 +43,15 @@ describe('resolutionSteps', () => {
     expect(steps[0].effects).toBe(ACTIVITIES[0].effects);
   });
 
+  it('carries each activity step\'s real days so playback can tick through them', () => {
+    const picks = ['play', 'train', 'rest'];
+    const steps = resolutionSteps(30, picks, ACTIVITIES, 'normal', DIETS);
+
+    expect(steps[0].days).toEqual(Array.from({ length: 10 }, (_, i) => i + 1));
+    expect(steps[1].days).toEqual(Array.from({ length: 10 }, (_, i) => i + 11));
+    expect(steps[2].days).toEqual(Array.from({ length: 10 }, (_, i) => i + 21));
+  });
+
   it('appends the diet step last with the matching diet entry effects', () => {
     const steps = resolutionSteps(30, ['play'], ACTIVITIES, 'hearty', DIETS);
     const dietStep = steps.at(-1);
