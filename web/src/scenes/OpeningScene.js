@@ -4,7 +4,7 @@ import { gameApi } from '../utils/gameApi.js';
 import { addFullscreenButton } from './fullscreenButton.js';
 
 const CANVAS_WIDTH = 960;
-const CANVAS_HEIGHT = 600;
+const CANVAS_HEIGHT = 750;
 
 export class OpeningScene extends Phaser.Scene {
   constructor(api = gameApi) {

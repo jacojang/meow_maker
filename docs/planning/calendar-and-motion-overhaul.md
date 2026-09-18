@@ -1,5 +1,5 @@
 ---
-status: deployed
+status: review
 updated: 2026-09-18
 ---
 
@@ -218,6 +218,67 @@ in front of the fireplace at floor level; spring's cat sits in the grass
 with blossom branches framing above — both read as grounded in the scene
 instead of floating in a dead-center box. Merged (#44) and deployed to
 production; re-verified live at `http://54.116.51.0:8000` after deploy.
+
+## Follow-up: opening-screen-style seasonal backgrounds, 4:3 panel, real layout resize
+
+The prior two follow-ups (aspect ratio, ground anchor) fixed real bugs but
+the user still felt the season art and the cat portrait read as visually
+disconnected — two separately-generated illustrations pasted together,
+unlike `opening-background.jpg`'s single cohesive scene (the actual
+character and cat composited standing on the ground of a real apartment
+park scene). The user's ask this time: throw out the 4 dedicated season
+backgrounds entirely, generate 4 seasonal *variants of the opening screen's
+own scene* (same buildings, path, `101 102` sign, bench, lamp post — just
+the girl and cat removed, and the season changed), and make the "고양이
+상태" panel a real 4:3 frame so that scene reads properly instead of being
+squeezed into a short wide strip.
+
+**Art**: regenerated all 4 `web/public/assets/seasons/season-*.jpg` files
+from scratch, using `web/public/assets/opening-background.jpg` itself as
+the `--ref` (not the previous per-season prompts) with instructions to
+keep the exact same scene/composition/characters removed, varying only the
+season (bare/snowy trees for winter, cherry blossoms for spring, full
+green for summer, orange/red leaves for autumn). Resized to 800px wide
+(~95-116KB each) — larger than the previous 640-wide crops since the panel
+they render into is now much bigger and would show upscaling artifacts at
+the old resolution.
+
+**Layout**: making the "고양이 상태" content area exactly 4:3
+(`areaWidth=408`, `areaHeight=306`) meant growing `TOP_PANEL_HEIGHT` from
+208 to 358 (+150) — and since both top-row panels share that height, the
+whole layout below shifts down by the same 150px: `CANVAS_HEIGHT` (600→750,
+updated in `main.js`'s Phaser config, `OpeningScene.js`, and
+`GameScene.js` — all three previously hardcoded this independently),
+`PICKER_Y` (304→454), and a new `PLAY_BUTTON_Y = 710` constant (previously
+a magic `560` used in two places in `renderPlayButton()`). `renderStats()`'s
+row-height cap was bumped (34→44) so the 능력치 panel's 7 stat rows spread
+across the taller panel evenly instead of leaving dead space at the
+bottom — `fitStep(count, max, available)` already always fills `available`
+exactly when `available/count ≤ max`, so this is just raising the cap
+above the new `available/count` (≈42.9), not a new mechanism.
+
+**Bug caught during manual verification, not by review-agent**: after
+resizing, the "지난 달 변화" (last-month-summary) message text — previously
+positioned at a hardcoded `y=526`, which sat just below the old picker
+panel — was left unshifted and ended up rendering *inside* the calendar
+grid, overlapping the weekday header and day cells. Fixed by making it
+relative (`PICKER_Y + PICKER_HEIGHT + 6`) instead of a magic number, same
+fix pattern as `renderEndOfRun()` already used. This was the direct result
+of missing one hardcoded position while updating several others by hand —
+grepped the whole file afterward for any other stray absolute Y value tied
+to the old layout and found none.
+
+**Portrait size**: after seeing it live, the user asked for the cat portrait
+to be roughly half its (linear) size — `PORTRAIT_SCALE` dropped from `0.8`
+to `0.4`. Ground-anchoring (from the prior follow-up) is unchanged and
+still applies at the new scale.
+
+Verified live: winter shows the exact opening-screen park scene (snow,
+bare trees, the `101 102` sign, the bench) with a properly-sized cat
+grounded on the path; March/spring shows the same scene in full cherry
+blossom bloom, correctly composing with the sick-cat portrait variant and
+stress badge, with no layout overlap anywhere (calendar grid, month
+summary message, play button).
 
 ## Why this order
 
