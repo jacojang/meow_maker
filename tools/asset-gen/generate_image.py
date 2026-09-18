@@ -18,6 +18,7 @@ from dotenv import load_dotenv
 from openai import OpenAI
 
 VALID_SIZES = {"1024x1024", "1024x1536", "1536x1024", "auto"}
+VALID_BACKGROUNDS = {"auto", "opaque", "transparent"}
 
 
 def parse_args() -> argparse.Namespace:
@@ -32,6 +33,12 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--out", required=True, type=Path, help="Output PNG path")
     parser.add_argument("--size", default="1536x1024", choices=sorted(VALID_SIZES))
+    parser.add_argument(
+        "--background",
+        default="auto",
+        choices=sorted(VALID_BACKGROUNDS),
+        help="'transparent' requires PNG output (the default --out extension)",
+    )
     return parser.parse_args()
 
 
@@ -49,11 +56,18 @@ def main() -> None:
         if args.refs:
             files = [stack.enter_context(open(ref, "rb")) for ref in args.refs]
             result = client.images.edit(
-                model="gpt-image-1", image=files, prompt=args.prompt, size=args.size
+                model="gpt-image-1",
+                image=files,
+                prompt=args.prompt,
+                size=args.size,
+                background=args.background,
             )
         else:
             result = client.images.generate(
-                model="gpt-image-1", prompt=args.prompt, size=args.size
+                model="gpt-image-1",
+                prompt=args.prompt,
+                size=args.size,
+                background=args.background,
             )
 
     image_bytes = base64.b64decode(result.data[0].b64_json)

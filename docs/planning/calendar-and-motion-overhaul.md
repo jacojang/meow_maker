@@ -129,6 +129,35 @@ User feedback on the current UI/UX ("정말 맘에 들지 않거든"), four asks
    after the month completes, and the resulting stats match the outing
    success-roll math exactly as before.
 
+## Follow-up: transparent cat portraits (fixing part 3's regression)
+
+Part 3 shipped the cat portrait layered over a season background, but the
+cat portrait JPGs each had their own solid beige backdrop baked in (JPG has
+no alpha channel) — so every season showed a visible rectangular "frame"
+around the cat where its own flat background clashed with the season art
+behind it. Confirmed with the user this needed fixing, and that regenerating
+all 12 portraits with a real transparent background (rather than reverting
+part 3) was worth the extra asset-gen cost.
+
+Fix: `tools/asset-gen/generate_image.py` gained a `--background` flag
+(`auto`/`opaque`/`transparent`, passed straight through to the OpenAI
+Images API's own `background` parameter on both `images.edit` and
+`images.generate`) — a small, reusable capability addition, not
+one-off scope creep. All 12 existing portraits (`web/public/assets/cats/`)
+were regenerated from their old JPGs as `--ref`, prompted to keep the exact
+same cat/pose/style but with `--background transparent`, output as PNG
+(verified with Pillow that every file has a real 0-255 alpha range, not a
+baked-in checkerboard or solid color), resized to the same 640x640
+convention, and the old opaque JPGs deleted. `BootScene.js`'s loader
+extension changed from `.jpg` to `.png` for the `cat-*` keys; no other code
+changed — `renderPortrait()`'s compositing logic was already correct, it
+just needed real transparency to composite against. File sizes landed at
+~325-425KB each (vs. ~90-110KB for the old JPGs) — expected and accepted,
+since lossless PNG-with-alpha is a genuinely different format requirement,
+not the same bloat problem as parts 3/4's oversized JPGs. Verified live:
+the fireplace's silhouette is now visible right up to the cat's edge in
+winter, and the sick-portrait variant also composites cleanly over spring.
+
 ## Why this order
 
 Parts 1 and 2 are pure frontend date/layout math, no art, and part 2 depends
