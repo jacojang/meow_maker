@@ -1,5 +1,5 @@
 ---
-status: review
+status: deployed
 updated: 2026-09-18
 ---
 
@@ -190,7 +190,9 @@ scale in `renderPortrait()` — the only code change in this follow-up.
 Verified live: winter's full room (fireplace, armchairs, lamp, curtain)
 and spring's blossom-branch-and-field composition are both now visible in
 full within the panel, with the smaller cat sitting naturally inside the
-scene instead of dominating a heavily-cropped square.
+scene instead of dominating a heavily-cropped square. Merged (#42) and
+deployed to production; re-verified live at `http://54.116.51.0:8000`
+after deploy.
 
 ## Why this order
 
