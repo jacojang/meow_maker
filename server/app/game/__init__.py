@@ -4,6 +4,13 @@ from .diet import DIET_EFFECTS, Diet, apply_diet
 from .endings import SCORE_MAX, Ending, compute_score, determine_ending
 from .events import EVENT_CHANCE, EVENT_EFFECTS, Event, apply_event, roll_event
 from .festival import FESTIVAL_BONUS, FESTIVAL_MONTH, FESTIVAL_STATS, resolve_festival
+from .outing import (
+    OUTING_FAILURE_PENALTY,
+    OUTING_SUCCESS_BONUS,
+    OUTING_SUCCESS_CHANCE,
+    apply_outing_result,
+    resolve_outing,
+)
 from .run import (
     FIRST_MONTH,
     MONTHS_PER_RUN,
@@ -47,6 +54,11 @@ __all__ = [
     "Ending",
     "determine_ending",
     "compute_score",
+    "OUTING_SUCCESS_CHANCE",
+    "OUTING_SUCCESS_BONUS",
+    "OUTING_FAILURE_PENALTY",
+    "resolve_outing",
+    "apply_outing_result",
     "GameRun",
     "GameRuleError",
     "RunFinishedError",

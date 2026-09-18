@@ -289,3 +289,16 @@ def test_state_reports_an_event_when_the_rng_forces_one(api_app):
         state = advance(client).json()
 
     assert state["last_event"] == "gift"
+
+
+def test_state_reports_a_successful_outing_when_the_rng_forces_one(api_app):
+    class _AlwaysSucceed(random.Random):
+        def random(self):
+            return 0.0
+
+    api_app.dependency_overrides[get_rng] = lambda: _AlwaysSucceed()
+    with TestClient(api_app) as client:
+        start_run(client)
+        state = advance(client, activities=["outing", "rest", "rest"]).json()
+
+    assert state["last_outing_result"] == "success"

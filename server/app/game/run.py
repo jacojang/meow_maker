@@ -11,6 +11,7 @@ from .diet import Diet, apply_diet
 from .endings import Ending, compute_score, determine_ending
 from .events import Event, apply_event, roll_event
 from .festival import FESTIVAL_MONTH, resolve_festival
+from .outing import apply_outing_result, resolve_outing
 from .stats import CatStats
 from .weight import apply_overweight_penalty
 
@@ -47,6 +48,7 @@ class GameRun:
     last_festival_winner: str | None = None
     ending: Ending | None = None
     score: int | None = None
+    last_outing_result: str | None = None
 
     def __post_init__(self) -> None:
         if not FIRST_MONTH <= self.month <= MONTHS_PER_RUN:
@@ -92,6 +94,10 @@ class GameRun:
 
         for activity in self.slots:
             self.stats = apply_activity(self.stats, activity)
+            if activity == Activity.OUTING:
+                succeeded = resolve_outing(rng)
+                self.stats = apply_outing_result(self.stats, succeeded)
+                self.last_outing_result = "success" if succeeded else "failure"
 
         event = roll_event(rng)
         self.stats = apply_event(self.stats, event)
@@ -129,6 +135,7 @@ class GameRun:
             "last_festival_winner": self.last_festival_winner,
             "ending": None if self.ending is None else self.ending.value,
             "score": self.score,
+            "last_outing_result": self.last_outing_result,
         }
 
     @classmethod
@@ -149,4 +156,5 @@ class GameRun:
             last_festival_winner=data.get("last_festival_winner"),
             ending=None if ending is None else Ending(ending),
             score=data.get("score"),
+            last_outing_result=data.get("last_outing_result"),
         )
