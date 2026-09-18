@@ -380,6 +380,49 @@ def test_no_festival_outside_the_fixed_month():
     assert run.last_festival_winner is None
 
 
+class _SequenceRng(random.Random):
+    def __init__(self, values):
+        super().__init__()
+        self._values = list(values)
+
+    def random(self):
+        return self._values.pop(0)
+
+
+def test_a_successful_outing_applies_the_base_effect_and_the_bonus():
+    run = GameRun(stats=CatStats(curiosity=30, discipline=10, stress=0))
+
+    # [outing succeeds, no random event]
+    play_month(run, Activity.OUTING, Activity.REST, Activity.REST, rng=_SequenceRng([0.0, 0.9]))
+
+    assert run.last_outing_result == "success"
+    # base {"curiosity": 3, "stress": 10} + success bonus {"curiosity": 5, "discipline": 5}
+    assert run.stats.curiosity == 30 + 3 + 5
+    assert run.stats.discipline == 10 + 5
+
+
+def test_a_failed_outing_applies_the_base_effect_and_the_penalty():
+    run = GameRun(stats=CatStats(curiosity=30, discipline=10, stress=0))
+
+    # [outing fails, no random event]
+    play_month(run, Activity.OUTING, Activity.REST, Activity.REST, rng=_SequenceRng([0.99, 0.9]))
+
+    assert run.last_outing_result == "failure"
+    # base {"curiosity": 3, "stress": 10} + failure penalty {"stress": 5},
+    # then REST x2 {"stress": -20} each brings stress back down.
+    assert run.stats.curiosity == 30 + 3
+    assert run.stats.discipline == 10
+    assert run.stats.stress == 0
+
+
+def test_last_outing_result_is_none_without_an_outing_slot():
+    run = GameRun()
+
+    play_month(run, Activity.REST, Activity.REST, Activity.REST)
+
+    assert run.last_outing_result is None
+
+
 def test_run_rejects_an_impossible_month_or_slot_count():
     with pytest.raises(ValueError):
         GameRun(month=0)

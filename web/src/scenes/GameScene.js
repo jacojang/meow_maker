@@ -46,6 +46,7 @@ const ACTIVITY_LABELS = {
   groom: '단장',
   rest: '휴식',
   educate: '교육',
+  outing: '나들이',
 };
 
 const DIET_LABELS = {
@@ -70,6 +71,7 @@ const ACTIVITY_COLORS = {
   groom: 0xb15fc9,
   rest: 0x3ca6a0,
   educate: 0x7ec93c,
+  outing: 0xe0708a,
 };
 
 const ACTIVITY_FLAVOR = {
@@ -78,6 +80,7 @@ const ACTIVITY_FLAVOR = {
   groom: '단정하게 털을 골랐다.',
   rest: '햇살 아래서 늘어지게 낮잠을 잤다.',
   educate: '새로운 것을 배우며 눈을 반짝였다.',
+  outing: '설레는 마음으로 나들이를 떠났다.',
 };
 
 const DIET_FLAVOR = {

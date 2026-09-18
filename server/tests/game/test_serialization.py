@@ -40,6 +40,7 @@ def test_to_dict_is_plain_json_safe_data():
         "last_festival_winner": None,
         "ending": None,
         "score": None,
+        "last_outing_result": None,
     }
     assert json.loads(json.dumps(data)) == data
 
@@ -133,6 +134,24 @@ def test_from_dict_defaults_ending_and_score_when_absent():
 
     assert restored.ending is None
     assert restored.score is None
+
+
+def test_round_trip_preserves_a_recorded_outing_result():
+    run = GameRun()
+    run.last_outing_result = "success"
+
+    restored = GameRun.from_dict(json.loads(json.dumps(run.to_dict())))
+
+    assert restored.last_outing_result == "success"
+
+
+def test_from_dict_defaults_outing_result_when_absent():
+    data = GameRun().to_dict()
+    del data["last_outing_result"]
+
+    restored = GameRun.from_dict(data)
+
+    assert restored.last_outing_result is None
 
 
 def test_from_dict_rejects_incomplete_data():
