@@ -1,5 +1,5 @@
 ---
-status: deployed
+status: review
 updated: 2026-09-18
 ---
 
@@ -159,6 +159,38 @@ the fireplace's silhouette is now visible right up to the cat's edge in
 winter, and the sick-portrait variant also composites cleanly over spring.
 Merged (#40) and deployed to production; re-verified live at
 `http://54.116.51.0:8000` after deploy.
+
+## Follow-up: season-background aspect ratio and portrait scale
+
+Once live, the user flagged a second visual issue with the seasonal
+backgrounds: the season art was generated square (1024x1024, later resized
+to 640x640), but the status panel's content area is a wide short rectangle
+(~408x156, aspect ratio ~2.6:1). `coverScale` scales a square image up
+until it fills both dimensions, so at that aspect ratio it zoomed in
+heavily and only a thin horizontal sliver of each square scene was ever
+visible.
+
+Fix: regenerated all 4 season backgrounds at `1536x1024` (the widest size
+`tools/asset-gen` supports) with prompts explicitly asking for a "wide
+panoramic banner" composition with key motifs kept inside a shallow
+horizontal band, then cropped each to `1536x587` (matching the panel's
+~2.6:1 aspect almost exactly) via `sips -c 587 1536` before the usual
+640-wide resize. Result: 640x244 files, 28-45KB each — smaller than
+before despite looking better, since the wide-short crop simply has far
+fewer total pixels than a 640x640 square. No code change was needed for
+this part; `renderPortrait()`'s existing `coverScale`-based compositing
+already does the right thing once the source image's aspect ratio roughly
+matches the target area.
+
+Separately, the user asked for the cat portrait itself to be a little
+smaller so it reads less like a flat cutout pasted onto the (now much more
+detailed) background. Added a `PORTRAIT_SCALE = 0.8` constant in
+`GameScene.js`, applied as a multiplier on top of the existing contain-fit
+scale in `renderPortrait()` — the only code change in this follow-up.
+Verified live: winter's full room (fireplace, armchairs, lamp, curtain)
+and spring's blossom-branch-and-field composition are both now visible in
+full within the panel, with the smaller cat sitting naturally inside the
+scene instead of dominating a heavily-cropped square.
 
 ## Why this order
 
