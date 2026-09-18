@@ -28,5 +28,12 @@ uv run python generate_image.py \
   *edit* endpoint to compose/blend them per the prompt.
 - `--size` defaults to `1536x1024`; other options are `1024x1024`,
   `1024x1536`, `auto`.
+- `--background` defaults to `auto`; other options are `opaque`,
+  `transparent` (requires PNG output, the default `--out` extension).
+- `--model` defaults to `gpt-image-1`; pass any other image model the
+  account has access to (e.g. `gpt-image-2.5-flare`) to compare cost/quality.
+- `--quality` defaults to `auto`; other options are `low`, `medium`,
+  `high`, `standard`, `xhigh`, `max` — lower quality is cheaper and faster,
+  useful for cost experiments before committing to a final asset.
 - Costs real money per call — check the prompt before running, and prefer
   fewer, more deliberate iterations over rapid trial-and-error.
