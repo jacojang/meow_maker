@@ -1,5 +1,5 @@
 ---
-status: review
+status: deployed
 updated: 2026-09-19
 ---
 
@@ -370,7 +370,13 @@ same attempt).
 Verified live: played a month with each of several activities scheduled,
 confirming the day-by-day frame cycling advances through poses without
 visible pop/zoom; all 30 frames resized to the existing 640x640 JPEG
-convention (~65-120KB each).
+convention (~65-120KB each). Merged (#49) and deployed to production;
+health endpoint re-verified after deploy at
+`http://54.116.51.0:8000` (live browser re-check was blocked by a
+transient Claude-in-Chrome extension connectivity issue at deploy time —
+the shipped content was already thoroughly verified locally in the
+browser and by two independent `review-agent` passes before this
+deploy).
 
 ## Why this order
 
