@@ -25,3 +25,12 @@ Coding and Review are also implemented as Claude Code subagents
 (`.claude/agents/coding-agent.md`, `.claude/agents/review-agent.md`) that run
 a conditional feedback loop instead of a single fixed pass — see
 [`development/dynamic-workflow.md`](development/dynamic-workflow.md).
+
+Planning is also covered by two subagents that iterate through debate:
+`.claude/agents/critic-agent.md` (compares the game to Princess Maker 2,
+proposes missing features, evaluates designs) and
+`.claude/agents/planner-agent.md` (decides how a proposal fits, writes the
+planning/design docs, sets priorities). Subagents can't call each other, so
+the main session relays between them. Run it with `/debate <scope>`; the
+protocol is in [`planning/debate-workflow.md`](planning/debate-workflow.md)
+(max 10 rounds; unresolved points go to the user).
