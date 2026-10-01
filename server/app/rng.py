@@ -7,6 +7,10 @@ def get_rng() -> random.Random:
     return random.Random()
 
 
+def get_day_rng() -> random.Random:
+    return random.Random()
+
+
 class NeverRng(random.Random):
     """A random.Random whose .random() always returns 1.0.
 

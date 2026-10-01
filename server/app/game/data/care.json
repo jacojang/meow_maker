@@ -1,0 +1,11 @@
+{
+  "pet": {"cost": 0, "works_when": "always", "works": {"stress": -8}},
+  "treat": {"cost": 20, "works_when": "healthy", "works": {"stress": -20}},
+  "scold": {
+    "cost": 0,
+    "works_when": "delinquent",
+    "works": {"stress": -15, "discipline": 2},
+    "otherwise": {"affection": -3, "stress": 3},
+    "otherwise_sick": {"affection": -3, "stress": 5}
+  }
+}

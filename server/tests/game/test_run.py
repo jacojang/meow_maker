@@ -3,7 +3,6 @@ import random
 import pytest
 
 from app.game import (
-    FESTIVAL_BONUS,
     FESTIVAL_MONTH,
     MONTHS_PER_RUN,
     SLOTS_PER_MONTH,
@@ -363,21 +362,22 @@ def test_a_fixed_seed_reproduces_the_same_event_and_stats():
     assert run_a.stats == run_b.stats
 
 
-def test_festival_fires_at_the_fixed_month_and_rewards_the_best_stat():
+def test_festival_month_with_no_contest_is_a_normal_month_without_a_bonus():
     run = GameRun(month=FESTIVAL_MONTH, stats=CatStats(affection=80))
 
     play_month(run, Activity.REST, Activity.REST, Activity.REST)
 
-    assert run.last_festival_winner == "affection"
-    assert run.stats.affection == 80 + FESTIVAL_BONUS
+    assert run.festival_result is None
+    assert run.ribbons == []
+    assert run.stats.affection == 80
 
 
-def test_no_festival_outside_the_fixed_month():
+def test_no_festival_result_outside_the_fixed_month():
     run = GameRun(month=FESTIVAL_MONTH - 1, stats=CatStats(affection=80))
 
     play_month(run, Activity.REST, Activity.REST, Activity.REST)
 
-    assert run.last_festival_winner is None
+    assert run.festival_result is None
 
 
 class _SequenceRng(random.Random):
@@ -435,7 +435,7 @@ def test_run_rejects_an_impossible_month_or_slot_count():
 
 
 def test_full_twelve_month_simulation():
-    run = GameRun()
+    run = GameRun(money=1000)
     plan = [
         [Activity.PLAY, Activity.GROOM, Activity.REST],
         [Activity.TRAIN, Activity.TRAIN, Activity.REST],
@@ -448,13 +448,12 @@ def test_full_twelve_month_simulation():
     assert run.finished is True
     assert run.month == MONTHS_PER_RUN
     assert not run.is_sick
-    # Month 10 (FESTIVAL_MONTH) lands on a TRAIN month, so the festival's
-    # +5 goes to discipline -- already this plan's highest festival stat.
-    assert run.last_festival_winner == "discipline"
+    # Month 10 is skipped (no contest): a normal TRAIN month, no festival bonus.
+    assert run.festival_result is None
     assert run.stats.to_dict() == {
         "health": 56,
         "affection": 62,
-        "discipline": 75,
+        "discipline": 70,
         "curiosity": 48,
         "refinement": 0,
         "age": 13,

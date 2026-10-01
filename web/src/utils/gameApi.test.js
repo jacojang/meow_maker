@@ -115,6 +115,18 @@ describe('createGameApi', () => {
     await expect(api.listDiets()).resolves.toEqual([]);
   });
 
+  it('unwraps the event list', async () => {
+    const events = [{ id: 'gift', effects: { affection: 2 } }];
+    const fetch = fakeFetch({ body: { events } });
+    const api = createGameApi({ fetch });
+
+    await expect(api.listEvents()).resolves.toEqual(events);
+    expect(fetch).toHaveBeenCalledWith('/api/events', {
+      method: 'GET',
+      credentials: 'same-origin',
+    });
+  });
+
   it('throws an ApiError carrying the status and detail', async () => {
     const fetch = fakeFetch({ status: 404, body: { detail: 'no run in progress' } });
     const api = createGameApi({ fetch });

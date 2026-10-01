@@ -18,6 +18,7 @@ class Activity(str, Enum):
     REST = "rest"
     EDUCATE = "educate"
     OUTING = "outing"
+    JOB = "job"
 
 
 ACTIVITY_EFFECTS: Mapping[Activity, Mapping[str, int]] = load_effects_table(

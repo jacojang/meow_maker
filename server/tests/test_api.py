@@ -41,7 +41,8 @@ def test_start_game_returns_a_fresh_run(client):
     assert state["finished"] is False
     assert state["is_sick"] is False
     assert state["last_event"] is None
-    assert state["last_festival_winner"] is None
+    assert state["festival_result"] is None
+    assert state["ribbons"] == []
     assert state["slots"] == [None] * SLOTS_PER_MONTH
     assert state["stats"] == CatStats().to_dict()
     assert state["months_per_run"] == MONTHS_PER_RUN
@@ -260,7 +261,7 @@ def test_state_reports_overweight_once_hearty_diet_pushes_past_the_threshold(cli
     start_run(client)
 
     for _ in range(11):
-        state = advance(client, diet="hearty").json()
+        state = advance(client, ["play", "groom", "rest"], diet="hearty").json()
 
     assert state["stats"]["weight"] > 80
     assert state["is_overweight"] is True

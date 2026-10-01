@@ -29,3 +29,8 @@ export const ALL_PORTRAIT_KEYS = AGE_STAGES.flatMap((age) =>
     WEIGHT_CONDITIONS.map((weight) => `${age}-${health}-${weight}`),
   ),
 );
+
+export function portraitKeyCandidates(stats, isSick, isBedridden = false) {
+  const base = portraitKey(stats, isSick);
+  return isBedridden ? [`${ageStage(stats.age)}-bedridden`, base] : [base];
+}

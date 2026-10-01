@@ -37,10 +37,18 @@ def test_to_dict_is_plain_json_safe_data():
         "slots": [None, "train", None],
         "diet": "normal",
         "last_event": None,
-        "last_festival_winner": None,
         "ending": None,
         "score": None,
         "last_outing_result": None,
+        "sick_streak": 0,
+        "sick_months_total": 0,
+        "bedridden_months": 0,
+        "last_month_log": [],
+        "money": 200,
+        "delinquent_streak": 0,
+        "last_care": None,
+        "festival_result": None,
+        "ribbons": [],
     }
     assert json.loads(json.dumps(data)) == data
 
@@ -103,15 +111,13 @@ def test_round_trip_preserves_a_recorded_event():
     assert restored.last_event is Event.GIFT
 
 
-def test_from_dict_defaults_last_event_and_festival_winner_when_absent():
+def test_from_dict_defaults_last_event_when_absent():
     data = GameRun().to_dict()
     del data["last_event"]
-    del data["last_festival_winner"]
 
     restored = GameRun.from_dict(data)
 
     assert restored.last_event is None
-    assert restored.last_festival_winner is None
 
 
 def test_round_trip_preserves_an_ending_and_score():

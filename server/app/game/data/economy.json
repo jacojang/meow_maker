@@ -1,0 +1,13 @@
+{
+  "start_money": 200,
+  "perfect_bonus_percent": 50,
+  "activities": {
+    "play": {"cost": 0, "income_per_day": 0},
+    "train": {"cost": 25, "income_per_day": 0},
+    "groom": {"cost": 0, "income_per_day": 0},
+    "rest": {"cost": 0, "income_per_day": 0},
+    "educate": {"cost": 35, "income_per_day": 0},
+    "outing": {"cost": 15, "income_per_day": 0},
+    "job": {"cost": 0, "income_per_day": 8}
+  }
+}
