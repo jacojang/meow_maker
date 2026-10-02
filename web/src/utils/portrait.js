@@ -24,13 +24,28 @@ export function portraitKey(stats, isSick) {
   return [ageStage(stats.age), healthCondition(isSick), weightCondition(stats.weight)].join('-');
 }
 
-export const ALL_PORTRAIT_KEYS = AGE_STAGES.flatMap((age) =>
+const BASE_PORTRAIT_KEYS = AGE_STAGES.flatMap((age) =>
   HEALTH_CONDITIONS.flatMap((health) =>
     WEIGHT_CONDITIONS.map((weight) => `${age}-${health}-${weight}`),
   ),
 );
 
-export function portraitKeyCandidates(stats, isSick, isBedridden = false) {
+const SPECIAL_CONDITIONS = ['bedridden', 'delinquent'];
+
+export const ALL_PORTRAIT_KEYS = [
+  ...BASE_PORTRAIT_KEYS,
+  ...AGE_STAGES.flatMap((age) => SPECIAL_CONDITIONS.map((condition) => `${age}-${condition}`)),
+];
+
+export function isLyingPortrait(key) {
+  return key.endsWith('-bedridden');
+}
+
+// Priority: bedridden > sick > delinquent > health/body. Flags come from the server.
+export function portraitKeyCandidates(stats, isSick, isBedridden = false, warnings = []) {
   const base = portraitKey(stats, isSick);
-  return isBedridden ? [`${ageStage(stats.age)}-bedridden`, base] : [base];
+  const stage = ageStage(stats.age);
+  if (isBedridden) return [`${stage}-bedridden`, base];
+  const delinquent = !isSick && (warnings ?? []).includes('delinquent');
+  return delinquent ? [`${stage}-delinquent`, base] : [base];
 }

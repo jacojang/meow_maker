@@ -1,8 +1,13 @@
 import catMetrics from '../data/catMetrics.json';
+import { isLyingPortrait } from './portrait.js';
 
-// Provisional (AC-1): fractions of the adult height taken from the old files.
-// Final values are set after AC-3 regenerates the portraits.
+// Final after AC-3: every seated portrait of a stage measures within ~10% of the same
+// bbox height, so one fraction per stage keeps healthy/sick/chubby/delinquent consistent.
 export const STAGE_HEIGHT_FRACTION = { kitten: 0.55, young: 0.75, adult: 1.0 };
+
+// A lying cat is sized by body length (width) = the stage's seated height, so it is
+// never scaled up to a seated height; its on-screen height follows its own aspect.
+const LYING_WIDTH_TO_SEATED_HEIGHT = 1.0;
 
 const LEGACY_SCALE = 0.4;
 const ADULT_HEIGHT_RATIO = 0.94;
@@ -21,7 +26,10 @@ export function placePortrait(portraitKey, area, metrics = catMetrics.cats) {
   if (!entry || stageFraction === undefined) return null;
 
   const adultHeightPx = Math.min(width, height) * LEGACY_SCALE * ADULT_HEIGHT_RATIO;
-  const scale = (adultHeightPx * stageFraction) / entry.bboxHeight;
+  const stageHeightPx = adultHeightPx * stageFraction;
+  const scale = isLyingPortrait(portraitKey)
+    ? (stageHeightPx * LYING_WIDTH_TO_SEATED_HEIGHT) / entry.bboxWidth
+    : stageHeightPx / entry.bboxHeight;
   const catWidthPx = entry.bboxWidth * scale;
 
   return {
