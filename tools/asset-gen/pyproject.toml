@@ -5,6 +5,7 @@ description = "Dev-time tool: generate composited game art via the OpenAI Images
 requires-python = ">=3.12"
 dependencies = [
     "openai>=1.50",
+    "pillow>=12.3.0",
     "python-dotenv>=1.0",
 ]
 
