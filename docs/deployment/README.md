@@ -68,6 +68,13 @@ Deployed successfully on 2026-09-15. `meow-maker.service` is `active` and
 `enabled` (survives reboot); `/health` and `/` both verified over HTTP
 against the real instance.
 
+Redeployed on 2026-10-02 with slices S1–S6b (PR #51, `e73cc7f`): visible
+events, build-based endings, sickness stakes, daily variance, money economy,
+care actions, festival contests. The instance runs `main`. The production DB
+was backed up first to `server/data/meow_maker.db.bak-20261002` on the
+instance; saves stay compatible (new fields default on load, no schema
+change).
+
 **Known shared-instance gotcha**: this instance also hosts an unrelated
 project, `jaco_ai_testbed/leaderboard` (run manually, not via systemd —
 `ps -fp $(pgrep -f leaderboard)` to check), which was *also* bound to
