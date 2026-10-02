@@ -230,6 +230,8 @@ server/data/
 # asset-gen scratch (masters/ stays tracked)
 tools/asset-gen/batch1/
 tools/asset-gen/batch2/
+tools/asset-gen/sheet_test/
+tools/asset-gen/sliced/
 tools/asset-gen/pilot_tmp/
 tools/asset-gen/batch*.log
 tools/asset-gen/jobs_*.json

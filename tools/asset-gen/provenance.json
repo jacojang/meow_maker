@@ -23,10 +23,11 @@
   "cat-young-delinquent": 2,
   "cat-adult-delinquent": 1
  },
- "scene_frames": "A: approved pilot/A takes; B-E: refs = anchor + approved A + human ref (one hop, no chaining)",
+ "scene_frames": "One 3x2 framed sheet per activity (5 panels + 1 empty) generated in a single call from anchor + human ref, then sliced by tools/asset-gen/slice_sheet.py (border detection); selection in scene_sheet_selection.json; masters in masters/sheets/",
  "prompts": [
   "tools/asset-gen/portrait_prompt.sh",
-  "tools/asset-gen/scene_prompt.sh"
+  "tools/asset-gen/scene_prompt.sh",
+  "tools/asset-gen/sheet_prompt.py"
  ],
  "date": "2026-10-02"
 }
