@@ -238,3 +238,14 @@ Done in one pass, decisions taken without further questions per the user.
 - **Seasons**: unchanged (AC-5 dropped).
 - Stage heights 0.55 / 0.75 / 1.0 are now final; lying poses (bedridden) scale by width.
 - Calls used: about 100 (AC-2a 3, pilot 16, AC-3 about 40, scenes about 40).
+
+### Update: scenes switched to the sheet method (2026-10-02)
+
+The user found the per-frame scenes still inconsistent and asked for one big image per activity with the five framed steps, cut into frames. This is the "sheet method" from the pilot options.
+
+- One call per activity at 1536x1024 asks for a 3x2 grid of framed panels (5 frames + 1 empty), refs = anchor + human ref only. The woman keeps her position and the camera stays fixed, so the cat and woman keep the same size, place and background across the five steps.
+- `tools/asset-gen/slice_sheet.py` finds the panel borders and cuts the five frames (border kept), padded to square, 512 px. Shipped as `scene-<act>[-b..-e].jpg` at 512x512.
+- Selection per activity is in `tools/asset-gen/scene_sheet_selection.json`; sheet masters are in `tools/asset-gen/masters/sheets/` (the old per-frame masters were removed; they stay in git history).
+- Not every take is usable: sheets with the wrong panel count, cropped panels, or a missing character were rejected (train and job needed re-takes; train changed from a hoop jump to sit and give-paw because the hoop could not be kept consistent in one sheet; play uses the earlier `medium` take because the `high` takes drifted).
+- Known limit: the woman's apparent size still differs a little between activities (close-up for rest/groom, smaller for outing/job). Within an activity she is constant.
+- Model/quality: `gpt-image-1-mini`, `medium` (a few `high` tries were not better).
