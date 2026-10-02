@@ -215,7 +215,7 @@ So one non-rest slot makes a fresh cat delinquent, and a shared warning margin o
 | P2 | S4 multiplier vs S5 job rule conflict | adopt | Job stat effects exempt from the multiplier. Only pay uses the outcome. |
 | P3 | S5 not codable | adopt | Default job named (쥐잡이 알바), trade, income and sick rule written. User may rename. |
 | P4 | Money may not be tight | adopt | Simulation acceptance in S5. If loose, raise costs, no shops. Money-in-score is conditional on it. |
-| P5 | Skip beats entering | adopt (option 1) | Ribbons add to score by rank (1st +40, 2nd +25, 3rd +10). Skip still allowed. |
+| P5 | Skip beats entering | adopt (option 1) | Ribbons add to score by rank (1st +75, 2nd +60, 3rd +50; retuned from 40/25/10 after S6b review, user decision). Skip still allowed. |
 | minor | Negative deltas multiplied | adopt | Multiplier applies to positive deltas only. |
 | minor | `last_festival_winner` conflict | adopt | Round 10 (user): not reset in S1, current behavior kept. Client shows the festival card only for the festival month. Deleted in S6b in favor of persistent `festival_result` and `ribbons`. |
 | minor | Warnings lack S3 codes | adopt | Extensible code list. S3 adds `bedridden`, `hospital_risk`. S6a adds `runaway_risk`. |
@@ -230,7 +230,7 @@ So one non-rest slot makes a fresh cat delinquent, and a shared warning margin o
 |---|---|---|---|
 | 1 | Image model | `gpt-image-1-mini`, `--quality medium` | Asset policy updated. Flags verified in the tool. |
 | 2 | Part-time job | 쥐잡이 알바 as proposed | Confirmed in `money-economy.md`. |
-| 3 | Ribbon score | 1st +40, 2nd +25, 3rd +10 | Confirmed in `festival-contests.md`. |
+| 3 | Ribbon score | 1st +75, 2nd +60, 3rd +50 | Retuned from 40/25/10 after S6b review so balanced builds gain from entering (user decision). See `festival-contests.md`. |
 | 4 | Festival skip | Allowed | Confirmed in `festival-contests.md`. |
 | 5 | Care actions | One per month in total | Confirmed in `care-actions.md`. |
 | 6 | SFX | Removed from priorities | B7 deferred. S8 no longer includes it. |

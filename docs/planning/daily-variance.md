@@ -94,7 +94,7 @@ round trip and old-save default, `NeverRng` = base deltas. Vitest for log-to-ani
 - Stress curve: above stress 60, fail weight grows 0.005 per point, capped at +0.20 (fail 0.45, normal 0.30, great 0.25 at the cap). Stress is read at the start of each day. Weights 0.25/0.50/0.25 unchanged.
 - REST and OUTING draw no day rolls and log `normal` days. OUTING's one-roll success layer is untouched and runs after the slot's days.
 - Log: `last_month_log`, one entry per slot, days numbered 1..N across the month, `deltas` list only non-zero stats. Replaced each month. No `db.py` change.
-- Client: `utils/dayLog.js` (steps, copy, gauges), `utils/playbackSpeed.js` (speed, `localStorage` in try/catch). The first month of a session plays at normal; later months use the saved speed. Speed buttons (보통 / 빠르게 / 건너뛰기) sit in the overlay header; skip ends the animation. About 250 ms per day at normal, 80 ms fast. The diet step stays as a closing panel. The money box spot is left empty for S5. `utils/resolutionSteps.js` is no longer used by the scene (kept, not deleted).
+- Client: `utils/dayLog.js` (steps, copy, gauges), `utils/playbackSpeed.js` (speed, `localStorage` in try/catch). The first month of a session plays at normal; later months use the saved speed. Speed buttons (보통 / 빠르게 / 건너뛰기) sit in the overlay header; skip ends the animation. About 250 ms per day at normal, 80 ms fast. The diet step stays as a closing panel. The money box spot is left empty for S5. `utils/resolutionSteps.js` was unused and has been deleted.
 - Day copy lines are a draft in `dayLog.js` for user review.
 - Job pay roll is S5. Not built.
 - Parity: pytest asserts the literal 12-month table and the slot split; Vitest asserts the same table against `daysInMonth`.

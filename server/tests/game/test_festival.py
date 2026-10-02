@@ -69,7 +69,7 @@ def test_rank_is_the_place_among_four_and_ties_favor_the_player(own, rivals, ran
 
 def test_prize_and_ribbon_score_by_rank():
     assert [prize_for(rank) for rank in (1, 2, 3, 4)] == [300, 150, 50, 0]
-    assert [ribbon_score(rank) for rank in (1, 2, 3, 4)] == [40, 25, 10, 0]
+    assert [ribbon_score(rank) for rank in (1, 2, 3, 4)] == [75, 60, 50, 0]
 
 
 def test_resolve_rolls_the_player_first_then_rivals_in_data_order():

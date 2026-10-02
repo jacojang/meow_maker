@@ -156,7 +156,7 @@ def test_ribbons_add_to_the_score_by_rank_and_leftover_money_does_not():
 
     scores = {rank: compute_score(RunSummary(stats=stats, ribbon_ranks=(rank,))) for rank in (1, 2, 3, 4)}
 
-    assert scores == {1: base + 40, 2: base + 25, 3: base + 10, 4: base}
+    assert scores == {1: base + 75, 2: base + 60, 3: base + 50, 4: base}
     assert compute_score(RunSummary(stats=stats)) == base
 
 

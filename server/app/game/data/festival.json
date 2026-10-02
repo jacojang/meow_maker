@@ -2,7 +2,7 @@
   "variance": {"low": 0.7, "high": 1.3},
   "entry_stress": 5,
   "prizes": {"1": 300, "2": 150, "3": 50, "4": 0},
-  "ribbon_scores": {"1": 40, "2": 25, "3": 10, "4": 0},
+  "ribbon_scores": {"1": 75, "2": 60, "3": 50, "4": 0},
   "contests": {
     "charm": {
       "stat": "affection",

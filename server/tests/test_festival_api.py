@@ -24,7 +24,7 @@ def test_festival_endpoint_lists_contests_rivals_prizes_and_ribbons(client):
     ]
     assert all(len(contest["rivals"]) == 3 for contest in data["contests"])
     assert data["prizes"] == {"1": 300, "2": 150, "3": 50, "4": 0}
-    assert data["ribbon_scores"] == {"1": 40, "2": 25, "3": 10, "4": 0}
+    assert data["ribbon_scores"] == {"1": 75, "2": 60, "3": 50, "4": 0}
 
 
 def test_contest_outside_the_festival_month_is_a_400(client):

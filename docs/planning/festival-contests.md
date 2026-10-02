@@ -54,7 +54,7 @@ and are cleared; the month's effect is a small entry stress (placeholder +5). If
 The old flat +5 winner bonus is removed.
 
 **Prizes**: money by rank (placeholders 1st 300, 2nd 150, 3rd 50, 4th 0) and a ribbon.
-Ribbons add to the score by rank so that entering can beat skipping (Round 6, accepted by the user in Round 9): 1st +40, 2nd +25, 3rd +10, 4th 0.
+Ribbons add to the score by rank so that entering can beat skipping (Round 6, accepted by the user in Round 9): 1st +75, 2nd +60, 3rd +50, 4th 0 (retuned after review from 40/25/10, see the S6b Notes).
 One score point is half a stat point, and three growth slots are worth roughly 30 score points, so 1st and 2nd beat skipping,
 3rd roughly breaks even, 4th loses. Money prizes are on top. Values are proposals, tuned in the simulation, still under the 1000 clamp.
 
@@ -74,7 +74,7 @@ they are rewritten for the new rule rather than bent to pass. Flag this at codin
 
 ## Open questions
 
-Resolved (Round 9): skipping the festival is allowed (a normal month), and ribbon score values 1st +40, 2nd +25, 3rd +10 are accepted.
+Resolved (Round 9): skipping the festival is allowed (a normal month), and ribbon score values 1st +40, 2nd +25, 3rd +10 were accepted, later retuned to 75/60/50 (user decision, see the S6b Notes).
 
 Still open, none for the user to decide now:
 - Contest names and rival cat names (drafts above for review).
@@ -118,3 +118,10 @@ Pooled over 500 seeds each, by placed rank (score delta vs skipping): 1st +18.3,
 - Acceptance: 1st and 2nd place beat skipping, 3rd breaks even, 4th loses, as the doc predicted. The prepared (specialist) cat gains by entering and wins first place 70% of the time. A deliberately balanced build (targeted, mixed) is better off skipping, because its three slots are worth more than a 3rd place. It does not dominate everywhere, so ribbon values stay at the confirmed 40/25/10.
 - The margin for an already-capped specialist (grinder) is small in score (+2) because 40 ribbon points about equal three training slots. Money prize (+300) is the real gain, and it matters most to money-tight strategies.
 - Not done: festival art (banner, 4 contest scenes, rival portraits, ribbon icon), rival storylines, items. Rival portraits are text-only by default (names only).
+
+**Retune (post-review)**
+
+- User decision: balanced builds should also gain by entering. Ribbon scores 40/25/10/0 became 75/60/50/0. Prizes (300/150/50/0) and the 4th-place ribbon (0) are unchanged. 3rd place had to rise most because a balanced cat lands 3rd about half the time. Rank 1 had to rise too, to keep 1st > 2nd > 3rd (a 3rd-heavy fix alone needs 3rd above 2nd). 60/50/45 and 70/55/45 were tried and left targeted at about 0 (+0.8 at 500 seeds, -0.1 at 1000 seeds).
+- Measured, paired seeds 0 to 999, score delta (enter minus skip), before (40/25/10) then after (75/60/50): targeted -29.5 to +4.3, mixed -14.7 to +13.2, grinder +2.0 to +7.5, random +3.9 to +28.3, all_train +47.8 to +77.6, spend_everything +27.6 to +52.1. By placed rank: 1st +19.5 to +38.4, 2nd +24.4 to +55.6, 3rd +3.9 to +42.9, 4th -18.5 (unchanged, so 4th is still no reward). Typical scores stay far under the 1000 clamp (targeted averages about 615); the clamp test still holds.
+- Targeted at 500 seeds with money-limited runs already gained before the retune (+15.0); the -29.5 case is the unlimited-money run the acceptance test uses.
+- Test edits (user-requested retune, hard-coded values only): `tests/test_festival_api.py` ribbon_scores dict, `tests/game/test_festival.py::test_prize_and_ribbon_score_by_rank` ribbon list, `tests/game/test_festival_run.py::test_ribbons_add_to_the_score_by_rank_and_leftover_money_does_not` offsets. `test_simulation_festival.py` is unchanged; its assertions still hold.
