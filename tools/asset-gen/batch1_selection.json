@@ -1,0 +1,20 @@
+{
+ "cat-kitten-healthy-normal": 2,
+ "cat-kitten-healthy-chubby": 1,
+ "cat-kitten-sick-normal": 1,
+ "cat-kitten-sick-chubby": 1,
+ "cat-young-healthy-normal": 1,
+ "cat-young-healthy-chubby": 2,
+ "cat-young-sick-normal": 1,
+ "cat-young-sick-chubby": 1,
+ "cat-adult-healthy-normal": 2,
+ "cat-adult-healthy-chubby": 2,
+ "cat-adult-sick-normal": 2,
+ "cat-adult-sick-chubby": 3,
+ "cat-kitten-bedridden": 3,
+ "cat-young-bedridden": 1,
+ "cat-adult-bedridden": 2,
+ "cat-kitten-delinquent": 1,
+ "cat-young-delinquent": 2,
+ "cat-adult-delinquent": 1
+}

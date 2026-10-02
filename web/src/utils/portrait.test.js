@@ -32,9 +32,11 @@ describe('portraitKey', () => {
 });
 
 describe('ALL_PORTRAIT_KEYS', () => {
-  it('lists all 12 age x health x weight combinations exactly once', () => {
-    expect(ALL_PORTRAIT_KEYS).toHaveLength(12);
-    expect(new Set(ALL_PORTRAIT_KEYS).size).toBe(12);
+  it('lists 12 age x health x weight combinations plus bedridden and delinquent per age, once each', () => {
+    expect(ALL_PORTRAIT_KEYS).toHaveLength(18);
+    expect(new Set(ALL_PORTRAIT_KEYS).size).toBe(18);
+    expect(ALL_PORTRAIT_KEYS).toContain('adult-bedridden');
+    expect(ALL_PORTRAIT_KEYS).toContain('kitten-delinquent');
   });
 });
 
@@ -48,5 +50,34 @@ describe('portraitKeyCandidates', () => {
 
   it('is just the normal key when not bedridden', () => {
     expect(portraitKeyCandidates({ age: 1, weight: 50 }, false)).toEqual(['kitten-healthy-normal']);
+  });
+
+  it('uses the delinquent portrait when warned and not sick, falling back to the base key', () => {
+    expect(portraitKeyCandidates({ age: 9, weight: 90 }, false, false, ['delinquent'])).toEqual([
+      'adult-delinquent',
+      'adult-healthy-chubby',
+    ]);
+  });
+
+  it('ignores near_delinquent and missing warnings', () => {
+    expect(portraitKeyCandidates({ age: 1, weight: 50 }, false, false, ['near_delinquent'])).toEqual([
+      'kitten-healthy-normal',
+    ]);
+    expect(portraitKeyCandidates({ age: 1, weight: 50 }, false, false, undefined)).toEqual([
+      'kitten-healthy-normal',
+    ]);
+  });
+
+  it('ranks sick above delinquent', () => {
+    expect(portraitKeyCandidates({ age: 1, weight: 50 }, true, false, ['sick', 'delinquent'])).toEqual([
+      'kitten-sick-normal',
+    ]);
+  });
+
+  it('ranks bedridden above sick and delinquent', () => {
+    expect(portraitKeyCandidates({ age: 1, weight: 50 }, true, true, ['delinquent'])).toEqual([
+      'kitten-bedridden',
+      'kitten-sick-normal',
+    ]);
   });
 });

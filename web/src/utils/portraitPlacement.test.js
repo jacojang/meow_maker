@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import catMetrics from '../data/catMetrics.json';
-import { ALL_PORTRAIT_KEYS } from './portrait.js';
+import { ALL_PORTRAIT_KEYS, isLyingPortrait } from './portrait.js';
 import { STAGE_HEIGHT_FRACTION, placeLegacyPortrait, placePortrait } from './portraitPlacement.js';
 
 const CATS_DIR = new URL('../../public/assets/cats/', import.meta.url);
@@ -33,7 +33,7 @@ describe('placePortrait', () => {
 
   it('gives every portrait of a stage the same on-screen height', () => {
     const heightOf = (key) => placePortrait(key, AREA).scale * catMetrics.cats[key].bboxHeight;
-    const adults = ALL_PORTRAIT_KEYS.filter((k) => k.startsWith('adult')).map(heightOf);
+    const adults = ALL_PORTRAIT_KEYS.filter((k) => k.startsWith('adult') && !isLyingPortrait(k)).map(heightOf);
     adults.forEach((h) => expect(h).toBeCloseTo(adults[0]));
     const chubby = heightOf('adult-healthy-chubby');
     expect(chubby).toBeCloseTo(heightOf('adult-healthy-normal'));
@@ -56,9 +56,42 @@ describe('placePortrait', () => {
   });
 
   it('returns null for unlisted keys, never a stale fallback for listed ones', () => {
-    expect(placePortrait('adult-bedridden', AREA)).toBeNull();
+    expect(placePortrait('adult-unknown', AREA)).toBeNull();
     expect(placePortrait('adult-healthy-normal', AREA, {})).toBeNull();
     expect(placePortrait('adult-healthy-normal', AREA)).not.toBeNull();
+  });
+});
+
+describe('on-screen heights for all portraits', () => {
+  const heightOf = (key) => placePortrait(key, AREA).scale * catMetrics.cats[key].bboxHeight;
+  const seated = ALL_PORTRAIT_KEYS.filter((k) => !isLyingPortrait(k));
+
+  it('shares one height per age across all seated portraits', () => {
+    ['kitten', 'young', 'adult'].forEach((stage) => {
+      const heights = seated.filter((k) => k.startsWith(stage)).map(heightOf);
+      heights.forEach((h) => expect(h).toBeCloseTo(heights[0]));
+    });
+  });
+
+  it('keeps source seated bbox heights within 15% per age so scaling stays gentle', () => {
+    ['kitten', 'young', 'adult'].forEach((stage) => {
+      const raw = seated.filter((k) => k.startsWith(stage)).map((k) => catMetrics.cats[k].bboxHeight);
+      expect(Math.max(...raw) / Math.min(...raw)).toBeLessThan(1.15);
+    });
+  });
+
+  it('keeps a lying cat lower than the seated height of its age and its body length equal to it', () => {
+    ['kitten', 'young', 'adult'].forEach((stage) => {
+      const key = `${stage}-bedridden`;
+      const seatedHeight = heightOf(`${stage}-healthy-normal`);
+      const placed = placePortrait(key, AREA);
+      expect(heightOf(key)).toBeLessThan(seatedHeight * 0.8);
+      expect(catMetrics.cats[key].bboxWidth * placed.scale).toBeCloseTo(seatedHeight);
+    });
+  });
+
+  it('places every key', () => {
+    ALL_PORTRAIT_KEYS.forEach((k) => expect(placePortrait(k, AREA)).not.toBeNull());
   });
 });
 

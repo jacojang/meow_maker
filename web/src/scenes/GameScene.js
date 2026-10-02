@@ -600,6 +600,7 @@ export class GameScene extends Phaser.Scene {
       this.state.stats,
       this.state.is_sick,
       this.state.is_bedridden,
+      this.state.warnings,
     )
       .map((key) => `cat-${key}`)
       .find((key) => this.textures.exists(key));

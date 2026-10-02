@@ -1,0 +1,32 @@
+{
+ "model": "gpt-image-1-mini",
+ "quality": "medium (anchor: high)",
+ "anchor": "masters/cat-anchor.png (take1 of AC-2a)",
+ "human_ref": "docs/design/character_and_background_samples/mom_of_cats_01.png",
+ "portrait_selection": {
+  "cat-kitten-healthy-normal": 2,
+  "cat-kitten-healthy-chubby": 1,
+  "cat-kitten-sick-normal": 1,
+  "cat-kitten-sick-chubby": 1,
+  "cat-young-healthy-normal": 1,
+  "cat-young-healthy-chubby": 2,
+  "cat-young-sick-normal": 1,
+  "cat-young-sick-chubby": 1,
+  "cat-adult-healthy-normal": 2,
+  "cat-adult-healthy-chubby": 2,
+  "cat-adult-sick-normal": 2,
+  "cat-adult-sick-chubby": 3,
+  "cat-kitten-bedridden": 3,
+  "cat-young-bedridden": 1,
+  "cat-adult-bedridden": 2,
+  "cat-kitten-delinquent": 1,
+  "cat-young-delinquent": 2,
+  "cat-adult-delinquent": 1
+ },
+ "scene_frames": "A: approved pilot/A takes; B-E: refs = anchor + approved A + human ref (one hop, no chaining)",
+ "prompts": [
+  "tools/asset-gen/portrait_prompt.sh",
+  "tools/asset-gen/scene_prompt.sh"
+ ],
+ "date": "2026-10-02"
+}

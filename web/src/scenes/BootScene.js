@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { ALL_PORTRAIT_KEYS } from '../utils/portrait.js';
 
-const ACTIVITY_SCENE_IDS = ['play', 'train', 'groom', 'rest', 'educate', 'outing'];
+const ACTIVITY_SCENE_IDS = ['play', 'train', 'groom', 'rest', 'educate', 'outing', 'job'];
 const SEASON_IDS = ['winter', 'spring', 'summer', 'autumn'];
 const FRAME_SUFFIXES = ['', '-b', '-c', '-d', '-e'];
 

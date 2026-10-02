@@ -1,5 +1,5 @@
 ---
-status: coding
+status: review
 updated: 2026-10-02
 ---
 
@@ -223,3 +223,18 @@ Per-call price is not known to me. The user said not to worry about cost; these 
 ## Open questions
 
 None for the user. Pilot results and the AC-2a take will come back to the user for approval at the points defined above (cap reached, failure, anchor pick).
+
+## Implementation notes (2026-10-02)
+
+Done in one pass, decisions taken without further questions per the user.
+
+- **AC-1** (merged): measurement script, placement helper, ground shadow.
+- **AC-2a**: 3 takes at `high`; take 1 chosen (two clearly separated body patches, tail visible, yellow eyes). Stored as `tools/asset-gen/masters/cat-anchor.png`. It is the only cat ref since.
+- **AC-2 pilot**: P1 passed (2 of 3; take 3 had a translucent body, `semi_transparent` 0.039), P2 passed, P3 passed (corners alpha 0, semi-transparent ratio under 0.02), P4 passed (educate, play, groom frame A each). The pilot used 16 calls (the cap); the Go conditions were met, so the run continued.
+- **AC-3**: 18 portraits (12 base + bedridden and delinquent per age) from the anchor only, `gpt-image-1-mini` at `medium`, 2 takes each; selection and metrics rules in `tools/asset-gen/batch1_selection.json`. Rejected: translucent bodies (`semi_transparent` over 0.02), non-zero corner alpha, face-color drift. Retried: adult-sick-chubby (2 more takes), kitten-bedridden (2 more). Chubby prompt was strengthened after the pilot (more clearly round body).
+- **AC-4**: 35 scene frames = 7 activities (play, train, groom, rest, educate, outing, and the new job) x 5 frames. Frame A from the anchor + human ref; B to E from anchor + approved A + human ref (one hop). The sheet method was not used. All frames accepted after eye check.
+- **Masters**: committed under `tools/asset-gen/masters/` (portraits as 1024 PNG, scenes as 1024 JPEG q92, about 32 MB). Provenance in `tools/asset-gen/provenance.json`.
+- **Rate limit**: the API allows 5 input images per minute for this model; `batch_generate.py` retries and spaces calls by the number of refs.
+- **Seasons**: unchanged (AC-5 dropped).
+- Stage heights 0.55 / 0.75 / 1.0 are now final; lying poses (bedridden) scale by width.
+- Calls used: about 100 (AC-2a 3, pilot 16, AC-3 about 40, scenes about 40).
