@@ -1,0 +1,197 @@
+{
+  "alphaThreshold": 20,
+  "cats": {
+    "adult-healthy-chubby": {
+      "file": "cat-adult-healthy-chubby.png",
+      "sha256": "9685f08d1bdd1e50dc01979a960d3ff60e3522ddcca08903c6b2cf969cac9309",
+      "width": 640,
+      "height": 640,
+      "bbox": {
+        "left": 118,
+        "top": 9,
+        "right": 609,
+        "bottom": 607
+      },
+      "bboxHeight": 598,
+      "bboxWidth": 491,
+      "bboxCenterX": 363.5,
+      "floorY": 607
+    },
+    "adult-healthy-normal": {
+      "file": "cat-adult-healthy-normal.png",
+      "sha256": "4c987bc29995d4f8d30c66a206233c6ffb2479f3d6e0c1da09f6277cc5788e14",
+      "width": 640,
+      "height": 640,
+      "bbox": {
+        "left": 142,
+        "top": 17,
+        "right": 553,
+        "bottom": 618
+      },
+      "bboxHeight": 601,
+      "bboxWidth": 411,
+      "bboxCenterX": 347.5,
+      "floorY": 618
+    },
+    "adult-sick-chubby": {
+      "file": "cat-adult-sick-chubby.png",
+      "sha256": "c5cebec1de93384595c4354c59771ec267b402f09bac6edaff531a7da1448bf6",
+      "width": 640,
+      "height": 640,
+      "bbox": {
+        "left": 29,
+        "top": 33,
+        "right": 578,
+        "bottom": 590
+      },
+      "bboxHeight": 557,
+      "bboxWidth": 549,
+      "bboxCenterX": 303.5,
+      "floorY": 590
+    },
+    "adult-sick-normal": {
+      "file": "cat-adult-sick-normal.png",
+      "sha256": "6be86b6afaa3fe9526751208b4fd6d59bd17e1946ae7f16da31d7e6d4a9e0728",
+      "width": 640,
+      "height": 640,
+      "bbox": {
+        "left": 53,
+        "top": 27,
+        "right": 545,
+        "bottom": 577
+      },
+      "bboxHeight": 550,
+      "bboxWidth": 492,
+      "bboxCenterX": 299.0,
+      "floorY": 577
+    },
+    "kitten-healthy-chubby": {
+      "file": "cat-kitten-healthy-chubby.png",
+      "sha256": "dfd0b5c482ce279c7d0bf358df7127d606a21873cd7c915c3d35a529d44120ee",
+      "width": 640,
+      "height": 640,
+      "bbox": {
+        "left": 109,
+        "top": 26,
+        "right": 553,
+        "bottom": 592
+      },
+      "bboxHeight": 566,
+      "bboxWidth": 444,
+      "bboxCenterX": 331.0,
+      "floorY": 592
+    },
+    "kitten-healthy-normal": {
+      "file": "cat-kitten-healthy-normal.png",
+      "sha256": "1292bc3e699cb10426f3f12ab5afc54599c5c1d4bbfd080be8c5dbf0d89e9a01",
+      "width": 640,
+      "height": 640,
+      "bbox": {
+        "left": 99,
+        "top": 25,
+        "right": 580,
+        "bottom": 606
+      },
+      "bboxHeight": 581,
+      "bboxWidth": 481,
+      "bboxCenterX": 339.5,
+      "floorY": 606
+    },
+    "kitten-sick-chubby": {
+      "file": "cat-kitten-sick-chubby.png",
+      "sha256": "8f4b24272695f20141e0ddf8192f16dc37da9d287b1fbe4a09e9d664af87a230",
+      "width": 640,
+      "height": 640,
+      "bbox": {
+        "left": 80,
+        "top": 66,
+        "right": 588,
+        "bottom": 555
+      },
+      "bboxHeight": 489,
+      "bboxWidth": 508,
+      "bboxCenterX": 334.0,
+      "floorY": 555
+    },
+    "kitten-sick-normal": {
+      "file": "cat-kitten-sick-normal.png",
+      "sha256": "1942861d2bb7041d06a2fd81877865e592286ab9e2b378ca523aff98c20d3916",
+      "width": 640,
+      "height": 640,
+      "bbox": {
+        "left": 73,
+        "top": 42,
+        "right": 547,
+        "bottom": 575
+      },
+      "bboxHeight": 533,
+      "bboxWidth": 474,
+      "bboxCenterX": 310.0,
+      "floorY": 575
+    },
+    "young-healthy-chubby": {
+      "file": "cat-young-healthy-chubby.png",
+      "sha256": "aaa5d979ca944e1fe74d193f93d18c3c706b328ce7b3c8cbdad413f107f15c90",
+      "width": 640,
+      "height": 640,
+      "bbox": {
+        "left": 109,
+        "top": 2,
+        "right": 577,
+        "bottom": 628
+      },
+      "bboxHeight": 626,
+      "bboxWidth": 468,
+      "bboxCenterX": 343.0,
+      "floorY": 628
+    },
+    "young-healthy-normal": {
+      "file": "cat-young-healthy-normal.png",
+      "sha256": "252e440b5aeb081ea7cec0af70fdd48911b2bcb42c70dfc303d60f7c5537a3ef",
+      "width": 640,
+      "height": 640,
+      "bbox": {
+        "left": 132,
+        "top": 17,
+        "right": 555,
+        "bottom": 620
+      },
+      "bboxHeight": 603,
+      "bboxWidth": 423,
+      "bboxCenterX": 343.5,
+      "floorY": 620
+    },
+    "young-sick-chubby": {
+      "file": "cat-young-sick-chubby.png",
+      "sha256": "31745e3de45ec17974af54f4a6eada2de8a4da319eb520093993798698a45d86",
+      "width": 640,
+      "height": 640,
+      "bbox": {
+        "left": 88,
+        "top": 35,
+        "right": 597,
+        "bottom": 594
+      },
+      "bboxHeight": 559,
+      "bboxWidth": 509,
+      "bboxCenterX": 342.5,
+      "floorY": 594
+    },
+    "young-sick-normal": {
+      "file": "cat-young-sick-normal.png",
+      "sha256": "e1634b2114641abf4afeb465c126852cb1d0fd61e4705009be1e8859ba22a701",
+      "width": 640,
+      "height": 640,
+      "bbox": {
+        "left": 69,
+        "top": 34,
+        "right": 591,
+        "bottom": 587
+      },
+      "bboxHeight": 553,
+      "bboxWidth": 522,
+      "bboxCenterX": 330.0,
+      "floorY": 587
+    }
+  }
+}

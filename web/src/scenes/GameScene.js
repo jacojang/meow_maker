@@ -40,6 +40,7 @@ import {
   priceLabel,
 } from '../utils/money.js';
 import { portraitKey, portraitKeyCandidates } from '../utils/portrait.js';
+import { placeLegacyPortrait, placePortrait } from '../utils/portraitPlacement.js';
 import { buildResultCards } from '../utils/resultCards.js';
 import { OUTCOME_COLORS, OUTCOME_TINTS, buildDaySteps } from '../utils/dayLog.js';
 import { SPEEDS, dayDelayMs, saveSpeed, startingSpeed } from '../utils/playbackSpeed.js';
@@ -48,7 +49,6 @@ import { isPickerLocked, lockedPicks, statusBadges, topWarning } from '../utils/
 import { addFullscreenButton } from './fullscreenButton.js';
 
 const RESOLUTION_STEP_MS = 700;
-const PORTRAIT_SCALE = 0.4;
 const PORTRAIT_GROUND_MARGIN = 6;
 const FRAME_SUFFIXES = ['', '-b', '-c', '-d', '-e'];
 const FRAME_PING_PONG = [0, 1, 2, 3, 4, 3, 2, 1];
@@ -605,10 +605,25 @@ export class GameScene extends Phaser.Scene {
       .find((key) => this.textures.exists(key));
     if (!textureKey) return;
 
-    const image = this.add.image(areaCenterX, areaTop + areaHeight - PORTRAIT_GROUND_MARGIN, textureKey);
-    const containScale = Math.min(areaWidth / image.width, areaHeight / image.height);
-    image.setScale(containScale * PORTRAIT_SCALE);
-    image.setOrigin(0.5, 1);
+    const area = {
+      centerX: areaCenterX,
+      floorY: areaTop + areaHeight - PORTRAIT_GROUND_MARGIN,
+      width: areaWidth,
+      height: areaHeight,
+    };
+    const portraitKeyName = textureKey.replace(/^cat-/, '');
+    const source = this.textures.get(textureKey).getSourceImage();
+    const placement =
+      placePortrait(portraitKeyName, area) ?? placeLegacyPortrait(area, source);
+
+    if (placement.shadow) {
+      const { x, y, width, height, alpha } = placement.shadow;
+      const shadow = this.add.ellipse(x, y, width, height, 0x000000, alpha);
+      this.ui.add(shadow);
+    }
+    const image = this.add.image(placement.x, placement.y, textureKey);
+    image.setScale(placement.scale);
+    image.setOrigin(placement.originX, placement.originY);
     this.ui.add(image);
   }
 
