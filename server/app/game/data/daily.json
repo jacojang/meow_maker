@@ -1,0 +1,7 @@
+{
+  "fail_weight": 0.25,
+  "great_weight": 0.25,
+  "stress_threshold": 60,
+  "stress_fail_shift_per_point": 0.005,
+  "max_fail_shift": 0.2
+}

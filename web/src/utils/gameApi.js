@@ -41,11 +41,28 @@ export function createGameApi({
   return {
     startGame: () => send('/game', { method: 'POST' }),
     readGame: () => send('/game'),
-    advanceMonth: (activities, diet = 'normal') =>
-      send('/game/advance', { method: 'POST', body: { activities, diet } }),
+    advanceMonth: (activities, diet = 'normal', care = null, contest = null) =>
+      send('/game/advance', {
+        method: 'POST',
+        body: {
+          activities,
+          diet,
+          ...(care ? { care } : {}),
+          ...(contest ? { contest } : {}),
+        },
+      }),
+    readFestival: () => send('/festival'),
     listActivities: async () => {
       const payload = await send('/activities');
       return payload?.activities ?? [];
+    },
+    listEvents: async () => {
+      const payload = await send('/events');
+      return payload?.events ?? [];
+    },
+    listCare: async () => {
+      const payload = await send('/care');
+      return payload?.care ?? [];
     },
     listDiets: async () => {
       const payload = await send('/diets');

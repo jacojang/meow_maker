@@ -3,7 +3,7 @@ from fastapi.testclient import TestClient
 
 from app.main import app
 from app.repository import InMemoryGameRepository, get_game_repository
-from app.rng import NeverRng, get_rng
+from app.rng import NeverRng, get_day_rng, get_rng
 from app.session import InMemorySessionPlayers, get_session_players
 
 
@@ -17,6 +17,7 @@ def api_app():
     # events/festivals and shouldn't have to account for them. Tests that
     # specifically want an event to fire override get_rng again locally.
     app.dependency_overrides[get_rng] = lambda: NeverRng()
+    app.dependency_overrides[get_day_rng] = lambda: NeverRng()
     yield app
     app.dependency_overrides.clear()
 

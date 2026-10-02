@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ALL_PORTRAIT_KEYS, portraitKey } from './portrait.js';
+import { ALL_PORTRAIT_KEYS, portraitKey, portraitKeyCandidates } from './portrait.js';
 
 describe('portraitKey', () => {
   it('picks kitten for the youngest ages', () => {
@@ -35,5 +35,18 @@ describe('ALL_PORTRAIT_KEYS', () => {
   it('lists all 12 age x health x weight combinations exactly once', () => {
     expect(ALL_PORTRAIT_KEYS).toHaveLength(12);
     expect(new Set(ALL_PORTRAIT_KEYS).size).toBe(12);
+  });
+});
+
+describe('portraitKeyCandidates', () => {
+  it('prefers the bedridden variant and falls back to the sick portrait', () => {
+    expect(portraitKeyCandidates({ age: 5, weight: 90 }, true, true)).toEqual([
+      'young-bedridden',
+      'young-sick-chubby',
+    ]);
+  });
+
+  it('is just the normal key when not bedridden', () => {
+    expect(portraitKeyCandidates({ age: 1, weight: 50 }, false)).toEqual(['kitten-healthy-normal']);
   });
 });

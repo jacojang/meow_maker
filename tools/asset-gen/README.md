@@ -1,7 +1,7 @@
 # asset-gen
 
 A dev-time tool, not part of the shipped game. It calls the OpenAI Images
-API (`gpt-image-2.5-flare` at `low` quality, by default) to composite
+API (`gpt-image-1-mini` at `low` quality, by default) to composite
 reference art (character sheets, background photos) into a single
 illustration, since no image-generation capability exists in this repo's
 normal workflow otherwise. Output PNGs get committed as game assets under
@@ -31,7 +31,7 @@ uv run python generate_image.py \
   `1024x1536`, `auto`.
 - `--background` defaults to `auto`; other options are `opaque`,
   `transparent` (requires PNG output, the default `--out` extension).
-- `--model` defaults to `gpt-image-2.5-flare`; pass any other image model
+- `--model` defaults to `gpt-image-1-mini`; pass any other image model
   the account has access to (e.g. `gpt-image-1`) to compare cost/quality.
 - `--quality` defaults to `low` (cheapest/fastest); other options are
   `medium`, `high`, `standard`, `xhigh`, `max`, `auto`.

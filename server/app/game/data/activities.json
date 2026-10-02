@@ -4,5 +4,6 @@
   "groom": {"affection": 3, "health": 1, "stress": 3},
   "rest": {"stress": -20},
   "educate": {"refinement": 5, "stress": 8},
-  "outing": {"curiosity": 3, "stress": 10}
+  "outing": {"curiosity": 3, "stress": 10},
+  "job": {"curiosity": 2, "refinement": -2, "stress": 8}
 }

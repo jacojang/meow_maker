@@ -1,21 +1,58 @@
 import Phaser from 'phaser';
 import { daySlots } from '../utils/calendar.js';
 import { calendarWeeks, WEEKDAY_LABELS } from '../utils/calendarGrid.js';
+import {
+  CARE_NONE_LABEL,
+  careAffordable,
+  careButtonLabel,
+  careCharge,
+  careHint,
+  careResultCopy,
+  sendableCare,
+} from '../utils/care.js';
 import { coverScale } from '../utils/coverScale.js';
+import {
+  SKIP_LABEL,
+  contestRowLabel,
+  contestRows,
+  festivalCardCopy,
+  festivalStage,
+  sendableContest,
+} from '../utils/festival.js';
 import { dateForDay, daysInMonth, formatDate, seasonForMonth } from '../utils/gameCalendar.js';
 import { gameApi } from '../utils/gameApi.js';
+import {
+  FINAL_REVEAL_STEP,
+  initialRevealStep,
+  isFinalRevealStep,
+  nextRevealStep,
+  revealed,
+  rollTotalTicks,
+  rolledValues,
+} from '../utils/endingReveal.js';
+import { endingFlavor, endingLabel } from '../utils/endingText.js';
 import { fitStep } from '../utils/layout.js';
-import { portraitKey } from '../utils/portrait.js';
-import { resolutionSteps } from '../utils/resolutionSteps.js';
+import {
+  UNAFFORDABLE_LINE,
+  affordablePicks,
+  buildMoneySteps,
+  canAffordPick,
+  priceLabel,
+} from '../utils/money.js';
+import { portraitKey, portraitKeyCandidates } from '../utils/portrait.js';
+import { buildResultCards } from '../utils/resultCards.js';
+import { OUTCOME_COLORS, OUTCOME_TINTS, buildDaySteps } from '../utils/dayLog.js';
+import { SPEEDS, dayDelayMs, saveSpeed, startingSpeed } from '../utils/playbackSpeed.js';
 import { STAT_NAMES, formatDelta, statDeltas } from '../utils/statDeltas.js';
+import { isPickerLocked, lockedPicks, statusBadges, topWarning } from '../utils/status.js';
 import { addFullscreenButton } from './fullscreenButton.js';
 
 const RESOLUTION_STEP_MS = 700;
-const RESOLUTION_DAY_MS = 200;
 const PORTRAIT_SCALE = 0.4;
 const PORTRAIT_GROUND_MARGIN = 6;
 const FRAME_SUFFIXES = ['', '-b', '-c', '-d', '-e'];
 const FRAME_PING_PONG = [0, 1, 2, 3, 4, 3, 2, 1];
+const SPEED_LABELS = { normal: '보통', fast: '빠르게', skip: '건너뛰기' };
 const DIET_VIGNETTE_COLOR = 0x8a8f4d;
 
 const CANVAS_WIDTH = 960;
@@ -31,6 +68,13 @@ const PICKER_HEIGHT = 216;
 const PICKER_COLUMN_X = [24, 256, 488, 720];
 const PICKER_COLUMN_WIDTH = 216;
 const PLAY_BUTTON_Y = 710;
+const DIET_PANEL_HEIGHT = 76;
+const PANEL_GAP = 6;
+const CARE_BUTTON_HEIGHT = 30;
+
+const CORE_STATS = STAT_NAMES.slice(0, 5);
+const REVEAL_STEP_MS = 1800;
+const ROLL_TICK_MS = 50;
 
 const PANEL_FILL = 0x11121f;
 const PANEL_ALPHA = 0.85;
@@ -54,22 +98,13 @@ const ACTIVITY_LABELS = {
   rest: '휴식',
   educate: '교육',
   outing: '나들이',
+  job: '쥐잡이 알바',
 };
 
 const DIET_LABELS = {
   normal: '보통',
   light: '저칼로리',
   hearty: '든든하게',
-};
-
-const ENDING_LABELS = {
-  neglected: '방치된 고양이',
-  delinquent: '말썽꾸러기 고양이',
-  healthy: '튼튼한 고양이',
-  beloved: '사랑받는 고양이',
-  disciplined: '모범생 고양이',
-  curious: '호기심 많은 탐험가',
-  refined: '우아한 고양이',
 };
 
 const ACTIVITY_COLORS = {
@@ -79,6 +114,7 @@ const ACTIVITY_COLORS = {
   rest: 0x3ca6a0,
   educate: 0x7ec93c,
   outing: 0xe0708a,
+  job: 0xc9a23c,
 };
 
 const ACTIVITY_FLAVOR = {
@@ -88,6 +124,7 @@ const ACTIVITY_FLAVOR = {
   rest: '햇살 아래서 늘어지게 낮잠을 잤다.',
   educate: '새로운 것을 배우며 눈을 반짝였다.',
   outing: '설레는 마음으로 나들이를 떠났다.',
+  job: '쥐를 잡으며 부지런히 일당을 벌었다.',
 };
 
 const DIET_FLAVOR = {
@@ -95,6 +132,48 @@ const DIET_FLAVOR = {
   light: '가볍게 먹으며 몸매를 관리했다.',
   hearty: '든든하게 배를 채웠다.',
 };
+
+const EVENT_COPY = {
+  visitor: { title: '손님 방문', body: '반가운 손님이 찾아와 고양이를 쓰다듬어 주었다.' },
+  good_mood: { title: '기분 좋은 날', body: '고양이가 기분 좋게 그르렁거렸다.' },
+  bad_mood: { title: '심술 난 날', body: '고양이가 괜히 심술을 부렸다.' },
+  mishap: { title: '말썽', body: '고양이가 집안에서 한바탕 사고를 쳤다.' },
+  gift: { title: '선물', body: '누군가 고양이에게 선물을 두고 갔다.' },
+};
+
+const OUTING_COPY = {
+  success: { title: '나들이 성공', body: '즐거운 나들이를 무사히 마치고 돌아왔다.' },
+  failure: { title: '나들이 실패', body: '나들이 중에 일이 꼬여 지친 채 돌아왔다.' },
+};
+
+const STATUS_BADGE_STYLE = {
+  delinquent: { label: '말썽', fill: 0xb5651d },
+  overweight: { label: '통통', fill: 0x8a6d1d },
+  bedridden: { label: '앓아누움', fill: 0x6b2d6b },
+};
+
+const ADVISOR_TEXT = {
+  near_sick: '조심하세요. 스트레스가 쌓여 곧 아플지도 몰라요.',
+  sick: '고양이가 아파요. 푹 쉬게 해 주세요.',
+  near_delinquent: '규율에 비해 스트레스가 높아요. 말썽을 부릴지도 몰라요.',
+  delinquent: '고양이가 말썽을 부리고 있어요. 스트레스를 풀어 주세요.',
+  overweight: '조금 통통해졌어요. 식단을 살펴보세요.',
+  hospital_risk: '위험해요! 이번 달에 낫지 않으면 입원할 수도 있어요.',
+  runaway_risk: '위험해요! 말썽이 이번 달에도 이어지면 집을 나갈지도 몰라요.',
+};
+
+const BEDRIDDEN_PICKER_TEXT = '푹 쉬어야 해요';
+
+const FESTIVAL_TITLE = '수확 축제 · 참가할 대회를 고르세요';
+const FESTIVAL_BACK_LABEL = '← 대회 고르기';
+const FESTIVAL_ENTER_LABEL = '대회 참가';
+
+function cardCopy(card) {
+  if (card.kind === 'care') return careResultCopy(card);
+  if (card.kind === 'outing') return OUTING_COPY[card.key];
+  if (card.kind === 'event') return EVENT_COPY[card.key] ?? { title: card.key, body: '' };
+  return festivalCardCopy(card);
+}
 
 function statLabel(stat) {
   return STAT_LABELS[stat] ?? stat;
@@ -106,10 +185,6 @@ function activityLabel(id) {
 
 function dietLabel(id) {
   return DIET_LABELS[id] ?? id;
-}
-
-function endingLabel(id) {
-  return ENDING_LABELS[id] ?? id;
 }
 
 function activityColor(id) {
@@ -144,6 +219,12 @@ export class GameScene extends Phaser.Scene {
     this.state = data?.state ?? null;
     this.activities = data?.activities ?? [];
     this.diets = data?.diets ?? [];
+    this.care = data?.care ?? [];
+    this.festival = data?.festival ?? null;
+    this.contestChoice = null;
+    this.carePick = null;
+    this.eventTable = data?.events ?? [];
+    this.resultCards = [];
     this.picks = this.defaultPicks();
     this.focusedSlot = 0;
     this.dietPick = this.diets[0]?.id ?? 'normal';
@@ -154,9 +235,12 @@ export class GameScene extends Phaser.Scene {
     this.animating = false;
     this.animationSteps = [];
     this.animationIndex = 0;
-    this.animationDay = null;
     this.animationFrameIndex = 0;
+    this.speed = 'normal';
     this.showActivityInfo = false;
+    this.endingStep = initialRevealStep(false);
+    this.rollTick = rollTotalTicks(CORE_STATS.length);
+    this.revealToken = 0;
   }
 
   create() {
@@ -196,18 +280,29 @@ export class GameScene extends Phaser.Scene {
   }
 
   async playMonth() {
-    if (this.busy || this.picks.length === 0) return;
+    if (this.busy) return;
+    const stage = this.festivalStage();
+    if (stage === 'choose') return;
+    const contest = sendableContest(stage, this.contestChoice);
+    this.picks = lockedPicks(this.state, this.picks);
+    if (!isPickerLocked(this.state) && !contest) {
+      this.picks = affordablePicks(this.scheduleBudget(), this.activities, this.picks);
+    }
+    if (this.picks.length === 0) return;
+    const sentPicks = contest ? [] : this.picks;
+    const care = sendableCare(this.carePick, this.care, this.state, this.activities, sentPicks);
 
     const before = this.state?.stats;
+    const processedMonth = this.state?.month;
     this.busy = true;
     this.message = '';
     this.render();
 
     try {
-      const next = await this.api.advanceMonth([...this.picks], this.dietPick);
+      const next = await this.api.advanceMonth([...sentPicks], this.dietPick, care, contest);
 
       try {
-        await this.playResolutionAnimation();
+        await this.playResolutionAnimation(next, before);
       } catch {
         // The animation is cosmetic only; never let it mask an
         // already-successful advance with a false error message.
@@ -217,57 +312,80 @@ export class GameScene extends Phaser.Scene {
       this.deltas = statDeltas(before, next.stats);
       this.hasPlayedMonth = true;
       this.state = next;
+      this.resultCards = buildResultCards({
+        processedMonth,
+        state: next,
+        events: this.eventTable,
+      });
+      if (next.finished) this.startEndingReveal();
     } catch (error) {
       this.message = describeError(error);
     } finally {
+      this.carePick = null;
+      this.contestChoice = null;
       this.busy = false;
       this.safeRender();
     }
   }
 
-  buildResolutionSteps() {
-    return resolutionSteps(
-      daysInMonth(this.state.month),
-      this.picks,
-      this.activities,
-      this.dietPick,
-      this.diets,
-    ).map((step) => ({
-      ...step,
-      label: step.kind === 'diet' ? dietLabel(step.id) : activityLabel(step.id),
-      flavor: step.kind === 'diet' ? dietFlavor(step.id) : activityFlavor(step.id),
-      color: step.kind === 'diet' ? DIET_VIGNETTE_COLOR : activityColor(step.id),
-      effectsText: effectsSummary(step.effects),
-      textureKey:
-        step.kind === 'diet'
-          ? `cat-${portraitKey(this.state.stats, this.state.is_sick)}`
-          : `scene-${step.id}`,
-    }));
+  festivalStage() {
+    return festivalStage(this.state, this.festival, this.contestChoice);
   }
 
-  async playResolutionAnimation() {
-    this.animationSteps = this.buildResolutionSteps();
-    this.animating = true;
-    for (let index = 0; index < this.animationSteps.length; index += 1) {
-      if (!this.alive) return;
-      this.animationIndex = index;
-      const step = this.animationSteps[index];
+  scheduleBudget() {
+    const money = this.state?.money ?? 0;
+    const entry = this.care.find((candidate) => candidate.id === this.carePick);
+    return money - careCharge(entry, this.state);
+  }
 
-      if (step.kind === 'activity' && step.days.length > 0) {
-        for (let dayPos = 0; dayPos < step.days.length; dayPos += 1) {
-          if (!this.alive) return;
-          this.animationDay = step.days[dayPos];
-          this.animationFrameIndex = FRAME_PING_PONG[dayPos % FRAME_PING_PONG.length];
-          this.render();
-          await this.delay(RESOLUTION_DAY_MS);
-        }
-      } else {
-        this.animationFrameIndex = 0;
+  buildResolutionSteps(next, before) {
+    const moneySteps = buildMoneySteps(next.last_month_log, this.state.money ?? 0);
+    const days = buildDaySteps(next.last_month_log, before, this.activities).map((step, index) => ({
+      ...step,
+      money: moneySteps[index]?.money,
+      moneyDelta: moneySteps[index]?.delta ?? 0,
+      kind: 'day',
+      label: activityLabel(step.activityId),
+      color: activityColor(step.activityId),
+      textureKey: `scene-${step.activityId}`,
+    }));
+    const diet = this.diets.find((entry) => entry.id === this.dietPick);
+    const dietStep = {
+      kind: 'diet',
+      id: this.dietPick,
+      title: '식단',
+      label: dietLabel(this.dietPick),
+      flavor: dietFlavor(this.dietPick),
+      color: DIET_VIGNETTE_COLOR,
+      effectsText: effectsSummary(diet?.effects),
+      textureKey: `cat-${portraitKey(this.state.stats, this.state.is_sick)}`,
+    };
+    return [...days, dietStep];
+  }
+
+  setSpeed(speed) {
+    this.speed = speed;
+    saveSpeed(speed);
+    if (this.alive && this.animating) this.render();
+  }
+
+  async playResolutionAnimation(next, before) {
+    this.animationSteps = this.buildResolutionSteps(next, before);
+    this.speed = startingSpeed(this.hasPlayedMonth);
+    this.animating = true;
+    try {
+      for (let index = 0; index < this.animationSteps.length; index += 1) {
+        if (!this.alive || this.speed === 'skip') return;
+        this.animationIndex = index;
+        const step = this.animationSteps[index];
+        this.animationFrameIndex =
+          step.kind === 'day' ? FRAME_PING_PONG[step.dayInSlot % FRAME_PING_PONG.length] : 0;
         this.render();
-        await this.delay(RESOLUTION_STEP_MS);
+        await this.delay(step.kind === 'day' ? dayDelayMs(this.speed) : RESOLUTION_STEP_MS);
       }
+    } finally {
+      this.animating = false;
     }
-    this.animating = false;
   }
 
   delay(ms) {
@@ -284,6 +402,10 @@ export class GameScene extends Phaser.Scene {
       return;
     }
 
+    this.picks = lockedPicks(this.state, this.picks);
+    if (!isPickerLocked(this.state) && !this.state.finished) {
+      this.picks = affordablePicks(this.scheduleBudget(), this.activities, this.picks);
+    }
     this.renderStats();
     this.renderPortrait();
 
@@ -302,6 +424,67 @@ export class GameScene extends Phaser.Scene {
     if (this.showActivityInfo) {
       this.renderActivityInfoPopup();
     }
+
+    if (this.resultCards.length > 0) {
+      this.renderResultCard(this.resultCards[0]);
+    }
+  }
+
+  dismissResultCard() {
+    this.resultCards.shift();
+    this.render();
+  }
+
+  renderResultCard(card) {
+    const copy = cardCopy(card);
+    const backdrop = this.add
+      .rectangle(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT, 0x000000, 0.6)
+      .setOrigin(0, 0)
+      .setInteractive({ useHandCursor: true });
+    backdrop.on('pointerdown', () => this.dismissResultCard());
+    this.ui.add(backdrop);
+
+    const width = 560;
+    const height = copy.lines ? 400 : 300;
+    const x = (CANVAS_WIDTH - width) / 2;
+    const y = (CANVAS_HEIGHT - height) / 2;
+    this.panel(x, y, width, height, 1);
+    this.text(CANVAS_WIDTH / 2, y + 24, copy.title, {
+      fontSize: '26px',
+      fontStyle: 'bold',
+      color: '#ffd479',
+    }).setOrigin(0.5, 0);
+    this.text(CANVAS_WIDTH / 2, y + 78, copy.body, {
+      fontSize: '18px',
+      wordWrap: { width: width - 64 },
+      align: 'center',
+    }).setOrigin(0.5, 0);
+
+    if (copy.lines) {
+      copy.lines.forEach((line, index) => {
+        this.text(CANVAS_WIDTH / 2, y + 130 + index * 28, line, { fontSize: '18px' }).setOrigin(0.5, 0);
+      });
+      this.text(CANVAS_WIDTH / 2, y + 130 + copy.lines.length * 28 + 12, copy.footer, {
+        fontSize: '18px',
+        fontStyle: 'bold',
+        color: '#ffd479',
+      }).setOrigin(0.5, 0);
+    }
+
+    const effects = card.chips ?? {};
+    STAT_NAMES.filter((stat) => stat in effects).forEach((stat, index) => {
+      const delta = effects[stat];
+      this.text(x + 40 + index * 120, y + 160, `${statLabel(stat)}${formatDelta(delta)}`, {
+        fontSize: '17px',
+        fontStyle: 'bold',
+        color: (stat === 'stress' ? delta < 0 : delta > 0) ? '#8fe0a8' : '#ff9a9a',
+      });
+    });
+
+    this.text(CANVAS_WIDTH / 2, y + height - 36, '클릭해서 계속', {
+      fontSize: '14px',
+      color: '#9a9db8',
+    }).setOrigin(0.5, 0);
   }
 
   renderHeader() {
@@ -310,8 +493,9 @@ export class GameScene extends Phaser.Scene {
 
     if (!this.state) return;
 
-    const displayDate = this.animating && this.animationDay
-      ? dateForDay(this.state.month, this.animationDay)
+    const animationDay = this.animating ? this.animationSteps[this.animationIndex]?.day : null;
+    const displayDate = animationDay
+      ? dateForDay(this.state.month, animationDay)
       : this.state.finished
         ? dateForDay(this.state.month, daysInMonth(this.state.month))
         : dateForDay(this.state.month, 1);
@@ -340,6 +524,11 @@ export class GameScene extends Phaser.Scene {
     this.panel(x, TOP_PANEL_Y, COLUMN_WIDTH, TOP_PANEL_HEIGHT);
     this.text(x + 16, TOP_PANEL_Y + 12, '능력치', { fontStyle: 'bold' });
     this.renderActivityInfoButton(x + COLUMN_WIDTH - 28, TOP_PANEL_Y + 22);
+    this.text(x + COLUMN_WIDTH - 52, TOP_PANEL_Y + 12, `소지금 ${this.displayMoney()}`, {
+      fontSize: '17px',
+      fontStyle: 'bold',
+      color: '#ffd479',
+    }).setOrigin(1, 0);
 
     const step = fitStep(STAT_NAMES.length, 44, TOP_PANEL_HEIGHT - 58);
     STAT_NAMES.forEach((stat, index) => {
@@ -359,6 +548,11 @@ export class GameScene extends Phaser.Scene {
         stat === 'stress' ? 0xe05c5c : 0x4d9a6e,
       );
     });
+  }
+
+  displayMoney() {
+    const step = this.animating ? this.animationSteps[this.animationIndex] : null;
+    return step?.money ?? this.state.money ?? 0;
   }
 
   statBar(x, y, width, height, fraction, color) {
@@ -399,14 +593,54 @@ export class GameScene extends Phaser.Scene {
       bg.setMask(maskShape.createGeometryMask());
     }
 
-    const textureKey = `cat-${portraitKey(this.state.stats, this.state.is_sick)}`;
-    if (!this.textures.exists(textureKey)) return;
+    this.renderAdvisor(areaLeft, areaTop, areaWidth);
+    this.renderStatusBadges(areaLeft + 8, areaTop + areaHeight - 30);
+
+    const textureKey = portraitKeyCandidates(
+      this.state.stats,
+      this.state.is_sick,
+      this.state.is_bedridden,
+    )
+      .map((key) => `cat-${key}`)
+      .find((key) => this.textures.exists(key));
+    if (!textureKey) return;
 
     const image = this.add.image(areaCenterX, areaTop + areaHeight - PORTRAIT_GROUND_MARGIN, textureKey);
     const containScale = Math.min(areaWidth / image.width, areaHeight / image.height);
     image.setScale(containScale * PORTRAIT_SCALE);
     image.setOrigin(0.5, 1);
     this.ui.add(image);
+  }
+
+  renderAdvisor(left, top, width) {
+    const code = topWarning(this.state.warnings);
+    if (!code || this.animating) return;
+    this.text(left + width / 2, top + 6, ADVISOR_TEXT[code], {
+      fontSize: '15px',
+      color: '#ffe9b0',
+      backgroundColor: '#1c1e33',
+      padding: { x: 8, y: 4 },
+      wordWrap: { width: width - 24 },
+      align: 'center',
+    }).setOrigin(0.5, 0);
+  }
+
+  renderStatusBadges(x, y) {
+    let offset = 0;
+    statusBadges(this.state)
+      .filter((id) => id in STATUS_BADGE_STYLE)
+      .forEach((id) => {
+        const { label, fill } = STATUS_BADGE_STYLE[id];
+        const chip = this.add
+          .rectangle(x + offset, y, 64, 24, fill, 1)
+          .setOrigin(0, 0)
+          .setStrokeStyle(1, 0xffffff, 0.6);
+        this.ui.add(chip);
+        this.text(x + offset + 32, y + 12, label, { fontSize: '14px', fontStyle: 'bold' }).setOrigin(
+          0.5,
+        );
+        offset += 72;
+      });
   }
 
   renderActivityInfoButton(x, y) {
@@ -466,7 +700,7 @@ export class GameScene extends Phaser.Scene {
         fontStyle: 'bold',
         color: '#ffd479',
       });
-      this.text(x, rowY + effectOffset, effectsSummary(activity.effects), {
+      this.text(x, rowY + effectOffset, `${effectsSummary(activity.effects)}  ·  ${priceLabel(activity)}`, {
         fontSize: '14px',
         color: '#cfd2e6',
         wordWrap: { width },
@@ -490,9 +724,83 @@ export class GameScene extends Phaser.Scene {
   }
 
   renderPickers() {
-    this.renderCalendar();
-    this.renderCalendarChoices();
+    const stage = this.festivalStage();
+    if (stage === 'choose' || stage === 'enter' || stage === 'locked') {
+      this.renderFestivalPanel(stage);
+    } else {
+      this.renderCalendar();
+      this.renderCalendarChoices();
+      if (stage === 'skip') this.renderFestivalBackButton();
+    }
     this.renderDietPicker();
+  }
+
+  festivalPanelWidth() {
+    return PICKER_COLUMN_X[2] + PICKER_COLUMN_WIDTH - PICKER_COLUMN_X[0];
+  }
+
+  renderFestivalPanel(stage) {
+    const x = PICKER_COLUMN_X[0];
+    const width = this.festivalPanelWidth();
+    this.panel(x, PICKER_Y, width, PICKER_HEIGHT);
+    this.text(x + 16, PICKER_Y + 10, FESTIVAL_TITLE, { fontStyle: 'bold' });
+
+    const locked = stage === 'locked';
+    const rowHeight = 30;
+    const rowStep = rowHeight + 4;
+    const rows = contestRows(this.festival, this.state.stats);
+    rows.forEach((row, index) => {
+      this.choiceButton(
+        x + 16,
+        PICKER_Y + 38 + index * rowStep,
+        width - 32,
+        rowHeight,
+        contestRowLabel(row),
+        this.contestChoice === row.id,
+        () => (locked ? this.refuseFestival() : this.chooseContest(row.id)),
+        { fontSize: '15px', dimmed: locked },
+      );
+    });
+    this.choiceButton(
+      x + 16,
+      PICKER_Y + 38 + rows.length * rowStep,
+      width - 32,
+      rowHeight,
+      SKIP_LABEL,
+      false,
+      () => (locked ? this.refuseFestival() : this.chooseContest('skip')),
+      { fontSize: '15px', dimmed: locked },
+    );
+    if (locked) {
+      this.text(x + width - 16, PICKER_Y + 10, BEDRIDDEN_PICKER_TEXT, {
+        fontSize: '16px',
+        fontStyle: 'bold',
+        color: '#ffb4e8',
+      }).setOrigin(1, 0);
+    }
+  }
+
+  renderFestivalBackButton() {
+    const x = PICKER_COLUMN_X[0] + this.festivalPanelWidth() - 16;
+    const label = this.text(x, PICKER_Y + 10, FESTIVAL_BACK_LABEL, {
+      fontSize: '14px',
+      color: '#ffd479',
+    }).setOrigin(1, 0);
+    label.setInteractive({ useHandCursor: true });
+    label.on('pointerdown', () => this.chooseContest(null));
+  }
+
+  chooseContest(choice) {
+    if (this.busy) return;
+    this.contestChoice = choice;
+    this.message = '';
+    this.render();
+  }
+
+  refuseFestival() {
+    if (this.busy) return;
+    this.message = BEDRIDDEN_PICKER_TEXT;
+    this.render();
   }
 
   renderCalendar() {
@@ -588,7 +896,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   calendarChoicesY() {
-    return PICKER_Y + PICKER_HEIGHT - 48;
+    return PICKER_Y + PICKER_HEIGHT - 56;
   }
 
   renderCalendarChoices() {
@@ -601,39 +909,95 @@ export class GameScene extends Phaser.Scene {
       (width - 32 - gap * (this.activities.length - 1)) / this.activities.length;
     const pick = this.picks[this.focusedSlot];
 
+    if (isPickerLocked(this.state)) {
+      this.text(x + width / 2, y + 18, BEDRIDDEN_PICKER_TEXT, {
+        fontSize: '20px',
+        fontStyle: 'bold',
+        color: '#ffb4e8',
+      }).setOrigin(0.5);
+      return;
+    }
+
     this.activities.forEach((activity, index) => {
+      const affordable = canAffordPick(
+        this.scheduleBudget(),
+        this.activities,
+        this.picks,
+        this.focusedSlot,
+        activity.id,
+      );
       this.choiceButton(
         x + 16 + index * (buttonWidth + gap),
         y,
         buttonWidth,
-        36,
+        44,
         activityLabel(activity.id),
         activity.id === pick,
-        () => this.choose(this.focusedSlot, activity.id),
+        () =>
+          affordable
+            ? this.choose(this.focusedSlot, activity.id)
+            : this.refuseChoice(),
+        {
+          fontSize: '15px',
+          sublabel: priceLabel(activity),
+          sublabelColor: affordable ? '#cfd2e6' : '#ff7a7a',
+          dimmed: !affordable,
+        },
       );
     });
   }
 
   renderDietPicker() {
     const x = PICKER_COLUMN_X[3];
-    this.panel(x, PICKER_Y, PICKER_COLUMN_WIDTH, PICKER_HEIGHT);
-    this.text(x + 16, PICKER_Y + 10, '식단', { fontStyle: 'bold' });
+    this.panel(x, PICKER_Y, PICKER_COLUMN_WIDTH, DIET_PANEL_HEIGHT);
+    this.text(x + 16, PICKER_Y + 8, '식단', { fontStyle: 'bold', fontSize: '15px' });
 
-    const top = PICKER_Y + 44;
-    const available = PICKER_HEIGHT - 56;
-    const step = Math.min(42, available / Math.max(this.diets.length, 1));
-
+    const gap = 6;
+    const width = (PICKER_COLUMN_WIDTH - 32 - gap * (this.diets.length - 1)) / this.diets.length;
     this.diets.forEach((diet, index) => {
       this.choiceButton(
-        x + 16,
-        top + index * step,
-        PICKER_COLUMN_WIDTH - 32,
-        step - 6,
+        x + 16 + index * (width + gap),
+        PICKER_Y + 34,
+        width,
+        CARE_BUTTON_HEIGHT,
         dietLabel(diet.id),
         diet.id === this.dietPick,
         () => this.chooseDiet(diet.id),
+        { fontSize: '13px' },
       );
     });
+    this.renderCarePicker(x);
+  }
+
+  renderCarePicker(x) {
+    const y = PICKER_Y + DIET_PANEL_HEIGHT + PANEL_GAP;
+    const height = PICKER_HEIGHT - DIET_PANEL_HEIGHT - PANEL_GAP;
+    this.panel(x, y, PICKER_COLUMN_WIDTH, height);
+    this.text(x + 16, y + 6, '돌봄 (달에 한 번)', { fontStyle: 'bold', fontSize: '15px' });
+
+    const gap = 6;
+    const width = (PICKER_COLUMN_WIDTH - 32 - gap) / 2;
+    const options = [{ id: null, cost: 0 }, ...this.care];
+    options.forEach((entry, index) => {
+      const affordable =
+        entry.id === null ||
+        careAffordable(entry, this.state, this.activities, this.festivalStage() === 'enter' ? [] : this.picks);
+      this.choiceButton(
+        x + 16 + (index % 2) * (width + gap),
+        y + 30 + Math.floor(index / 2) * (CARE_BUTTON_HEIGHT + gap),
+        width,
+        CARE_BUTTON_HEIGHT,
+        entry.id === null ? CARE_NONE_LABEL : careButtonLabel(entry),
+        entry.id === this.carePick,
+        () => (affordable ? this.chooseCare(entry.id) : this.refuseChoice()),
+        { fontSize: '13px', dimmed: !affordable },
+      );
+    });
+
+    const hint = careHint(this.carePick, this.state);
+    if (hint) {
+      this.text(x + 16, y + height - 20, hint, { fontSize: '11px', color: '#ffe9b0' });
+    }
   }
 
   renderResolutionOverlay() {
@@ -643,13 +1007,13 @@ export class GameScene extends Phaser.Scene {
     if (!step) return;
 
     this.panel(x, PICKER_Y, width, PICKER_HEIGHT);
-    const dayLabel = this.animationDay ? ` · ${this.animationDay}일` : '';
-    this.text(
-      x + 16,
-      PICKER_Y + 10,
-      `한 달을 보내는 중… (${this.animationIndex + 1}/${this.animationSteps.length})${dayLabel}`,
-      { fontStyle: 'bold', color: '#ffd479' },
-    );
+    const dayCount = this.animationSteps.length - 1;
+    const header =
+      step.kind === 'day'
+        ? `${formatDate(dateForDay(this.state.month, step.day))} · ${step.day}일 (${step.day}/${daysInMonth(this.state.month)}) · ${step.label}`
+        : '한 달을 마무리하는 중…';
+    this.text(x + 16, PICKER_Y + 10, header, { fontStyle: 'bold', color: '#ffd479' });
+    this.renderSpeedButtons(x + width - 16, PICKER_Y + 8);
 
     const vignetteWidth = 340;
     const vignetteHeight = PICKER_HEIGHT - 60;
@@ -662,7 +1026,7 @@ export class GameScene extends Phaser.Scene {
         .setStrokeStyle(2, 0xffffff, 0.6),
     );
 
-    const frameSuffix = step.kind === 'activity' ? FRAME_SUFFIXES[this.animationFrameIndex] : '';
+    const frameSuffix = step.kind === 'day' ? FRAME_SUFFIXES[this.animationFrameIndex] : '';
     const textureKey = `${step.textureKey}${frameSuffix}`;
     if (this.textures.exists(textureKey)) {
       const areaWidth = vignetteWidth - 16;
@@ -673,6 +1037,7 @@ export class GameScene extends Phaser.Scene {
         textureKey,
       );
       image.setScale(Math.min(areaWidth / image.width, areaHeight / image.height));
+      if (step.kind === 'day') image.setTint(OUTCOME_TINTS[step.outcome]);
       this.ui.add(image);
     }
 
@@ -684,24 +1049,105 @@ export class GameScene extends Phaser.Scene {
     }).setOrigin(0.5, 1);
 
     const textX = vignetteX + vignetteWidth + 24;
+    const textWidth = width - vignetteWidth - 64;
+    if (step.kind === 'day') {
+      this.text(textX, vignetteY + 2, `${step.day}일째 - ${step.line}`, {
+        fontSize: '18px',
+        fontStyle: 'bold',
+        color: OUTCOME_COLORS[step.outcome],
+        wordWrap: { width: textWidth },
+      });
+      this.renderDayGauges(step, textX, vignetteY + 38, textWidth);
+      this.renderMoneyBox(step, textX, vignetteY + vignetteHeight - 4);
+      this.text(textX + textWidth, vignetteY + vignetteHeight - 4, `${dayCount}일 중 ${step.day}일째`, {
+        fontSize: '12px',
+        color: '#8f93b3',
+      }).setOrigin(1, 1);
+      return;
+    }
     this.text(textX, vignetteY + 4, step.title, { fontSize: '20px', fontStyle: 'bold' });
     this.text(textX, vignetteY + 40, step.flavor, {
       fontSize: '16px',
       color: '#e7e9f5',
-      wordWrap: { width: width - vignetteWidth - 64 },
+      wordWrap: { width: textWidth },
     });
     this.text(textX, vignetteY + 90, step.effectsText, { fontSize: '14px', color: '#cfd2e6' });
   }
 
+  renderMoneyBox(step, x, bottomY) {
+    if (step.money === undefined) return;
+    const change = step.moneyDelta;
+    const suffix = change === 0 ? '' : `  (${formatDelta(change)})`;
+    this.text(x, bottomY, `소지금 ${step.money}${suffix}`, {
+      fontSize: '15px',
+      fontStyle: 'bold',
+      color: change > 0 ? '#8fe0a8' : change < 0 ? '#ff9a9a' : '#ffd479',
+      backgroundColor: '#1c1e33',
+      padding: { x: 8, y: 3 },
+    }).setOrigin(0, 1);
+  }
+
+  renderDayGauges(step, x, y, width) {
+    const rowHeight = 26;
+    const barX = x + 64;
+    const barWidth = width - 64 - 56;
+    step.gauges.forEach((gauge, index) => {
+      const rowY = y + index * rowHeight;
+      this.text(x, rowY, statLabel(gauge.stat), { fontSize: '14px', color: '#cfd2e6' });
+      this.statBar(
+        barX,
+        rowY + 5,
+        barWidth,
+        10,
+        gauge.value / 100,
+        gauge.stat === 'stress' ? 0xe05c5c : 0x4d9a6e,
+      );
+      const changed = gauge.delta !== 0;
+      this.text(barX + barWidth + 8, rowY, changed ? `${gauge.value} (${formatDelta(gauge.delta)})` : `${gauge.value}`, {
+        fontSize: '13px',
+        color: changed ? '#ffd479' : '#8f93b3',
+      });
+    });
+  }
+
+  renderSpeedButtons(rightX, y) {
+    let x = rightX;
+    [...SPEEDS].reverse().forEach((speed) => {
+      const selected = this.speed === speed;
+      const button = this.add
+        .rectangle(x, y, 84, 26, selected ? CHOICE_SELECTED_FILL : CHOICE_FILL, 1)
+        .setOrigin(1, 0)
+        .setStrokeStyle(1, 0xffffff, 0.5)
+        .setInteractive({ useHandCursor: true });
+      button.on('pointerdown', () => this.setSpeed(speed));
+      this.ui.add(button);
+      this.text(x - 42, y + 13, SPEED_LABELS[speed], { fontSize: '13px' }).setOrigin(0.5);
+      x -= 92;
+    });
+  }
+
   choose(slot, activityId) {
-    if (this.busy) return;
+    if (this.busy || isPickerLocked(this.state)) return;
     this.picks[slot] = activityId;
+    this.message = '';
+    this.render();
+  }
+
+  refuseChoice() {
+    if (this.busy) return;
+    this.message = UNAFFORDABLE_LINE;
     this.render();
   }
 
   focusSlot(slot) {
     if (this.busy) return;
     this.focusedSlot = slot;
+    this.render();
+  }
+
+  chooseCare(careId) {
+    if (this.busy) return;
+    this.carePick = careId;
     this.render();
   }
 
@@ -712,8 +1158,9 @@ export class GameScene extends Phaser.Scene {
   }
 
   renderPlayButton() {
-    const label = this.busy ? '진행 중…' : '한 달 보내기';
-    const enabled = !this.busy && this.picks.length > 0;
+    const entering = this.festivalStage() === 'enter';
+    const label = this.busy ? '진행 중…' : entering ? FESTIVAL_ENTER_LABEL : '한 달 보내기';
+    const enabled = !this.busy && this.picks.length > 0 && this.festivalStage() !== 'choose';
     const fill = enabled ? 0x3f7d5a : 0x3a3c4f;
 
     const button = this.add
@@ -732,35 +1179,131 @@ export class GameScene extends Phaser.Scene {
     button.on('pointerdown', () => this.playMonth());
   }
 
+  startEndingReveal() {
+    this.endingStep = initialRevealStep(true);
+    this.rollTick = 0;
+    this.runStatRoll(++this.revealToken);
+  }
+
+  async runStatRoll(token) {
+    const total = rollTotalTicks(CORE_STATS.length);
+    while (this.rollTick < total) {
+      await this.delay(ROLL_TICK_MS);
+      if (!this.alive || token !== this.revealToken) return;
+      this.rollTick += 1;
+      this.safeRender();
+    }
+    this.scheduleAutoAdvance(token);
+  }
+
+  scheduleAutoAdvance(token) {
+    if (isFinalRevealStep(this.endingStep)) return;
+    this.delay(REVEAL_STEP_MS).then(() => {
+      if (!this.alive || token !== this.revealToken) return;
+      this.advanceReveal();
+    });
+  }
+
+  advanceReveal() {
+    if (isFinalRevealStep(this.endingStep)) return;
+    this.rollTick = rollTotalTicks(CORE_STATS.length);
+    this.endingStep = nextRevealStep(this.endingStep);
+    this.scheduleAutoAdvance(++this.revealToken);
+    this.safeRender();
+  }
+
+  skipReveal() {
+    this.revealToken += 1;
+    this.rollTick = rollTotalTicks(CORE_STATS.length);
+    this.endingStep = FINAL_REVEAL_STEP;
+    this.safeRender();
+  }
+
+  async restartGame() {
+    if (this.busy) return;
+    this.busy = true;
+    try {
+      const state = await this.api.startGame();
+      this.scene.start('GameScene', {
+        state,
+        activities: this.activities,
+        diets: this.diets,
+        care: this.care,
+        festival: this.festival,
+        events: this.eventTable,
+      });
+    } catch (error) {
+      this.message = describeError(error);
+      this.busy = false;
+      this.safeRender();
+    }
+  }
+
   renderEndOfRun() {
     const x = COLUMN_X[0];
     const width = CANVAS_WIDTH - 48;
-    this.panel(x, PICKER_Y, width, PICKER_HEIGHT);
+    const step = this.endingStep;
+    const panel = this.panel(x, PICKER_Y, width, PICKER_HEIGHT);
 
-    this.text(x + 24, PICKER_Y + 16, '육성을 마쳤습니다', {
-      fontSize: '24px',
+    if (!isFinalRevealStep(step)) {
+      panel.setInteractive({ useHandCursor: true });
+      panel.on('pointerdown', () => this.advanceReveal());
+    }
+
+    this.text(x + 24, PICKER_Y + 14, '육성을 마쳤습니다', {
+      fontSize: '22px',
       fontStyle: 'bold',
       color: '#ffd479',
     });
 
-    this.text(x + 24, PICKER_Y + 52, endingLabel(this.state.ending), {
-      fontSize: '30px',
-      fontStyle: 'bold',
-      color: '#8ce3a5',
-    });
-    this.text(x + 24, PICKER_Y + 90, `점수 ${this.state.score} / 1000`, {
-      fontSize: '18px',
-      fontStyle: 'bold',
-      color: '#cfd2e6',
-    });
+    const rolled = rolledValues(
+      CORE_STATS.map((stat) => this.state.stats[stat]),
+      this.rollTick,
+    );
+    const summary = CORE_STATS.map((stat, index) => `${statLabel(stat)} ${rolled[index]}`).join(
+      '   ',
+    );
+    this.text(x + 24, PICKER_Y + 48, summary, { fontSize: '18px', fontStyle: 'bold' });
 
-    const summary = STAT_NAMES.map(
-      (stat) => `${statLabel(stat)} ${this.state.stats[stat]}`,
-    ).join('   ');
-    this.text(x + 24, PICKER_Y + 130, summary, {
-      fontSize: '18px',
-      fontStyle: 'bold',
-      wordWrap: { width: width - 48 },
+    if (revealed(step, 'title')) {
+      this.text(x + 24, PICKER_Y + 82, endingLabel(this.state.ending), {
+        fontSize: '30px',
+        fontStyle: 'bold',
+        color: '#8ce3a5',
+      });
+    }
+    if (revealed(step, 'flavor')) {
+      this.text(x + 24, PICKER_Y + 128, endingFlavor(this.state.ending), {
+        fontSize: '17px',
+        color: '#cfd2e6',
+        lineSpacing: 6,
+        wordWrap: { width: width - 300 },
+      });
+    }
+    if (revealed(step, 'score')) {
+      this.text(x + width - 24, PICKER_Y + 14, `점수 ${this.state.score} / 1000`, {
+        fontSize: '20px',
+        fontStyle: 'bold',
+        color: '#cfd2e6',
+      }).setOrigin(1, 0);
+      this.endButton(x + width - 24 - 70, PICKER_Y + PICKER_HEIGHT - 40, 140, '다시 시작', () =>
+        this.restartGame(),
+      );
+    } else {
+      this.endButton(x + width - 24 - 50, PICKER_Y + 10, 100, '건너뛰기', () => this.skipReveal());
+    }
+  }
+
+  endButton(centerX, centerY, width, label, onClick) {
+    const button = this.add
+      .rectangle(centerX, centerY, width, 34, CHOICE_FILL, 1)
+      .setStrokeStyle(1, 0xffffff, 0.5);
+    this.ui.add(button);
+    this.text(centerX, centerY, label, { fontSize: '16px', fontStyle: 'bold' }).setOrigin(0.5);
+    button.setInteractive({ useHandCursor: true });
+    button.on('pointerdown', (_pointer, _x, _y, event) => {
+      event?.stopPropagation?.();
+      onClick();
     });
   }
 
@@ -806,21 +1349,32 @@ export class GameScene extends Phaser.Scene {
     return text;
   }
 
-  choiceButton(x, y, width, height, label, selected, onClick) {
+  choiceButton(x, y, width, height, label, selected, onClick, options = {}) {
+    const { fontSize = '17px', sublabel, sublabelColor, dimmed = false } = options;
+    const alpha = dimmed ? 0.45 : 1;
     const fill = selected ? CHOICE_SELECTED_FILL : CHOICE_FILL;
     const button = this.add
-      .rectangle(x, y, width, height, fill, 1)
+      .rectangle(x, y, width, height, fill, alpha)
       .setOrigin(0, 0)
       .setStrokeStyle(selected ? 2 : 1, 0xffffff, selected ? 0.9 : 0.3);
     this.ui.add(button);
-    this.text(x + width / 2, y + height / 2, label, {
-      fontSize: '17px',
+    const labelY = sublabel ? y + height * 0.34 : y + height / 2;
+    this.text(x + width / 2, labelY, label, {
+      fontSize,
       fontStyle: selected ? 'bold' : 'normal',
-    }).setOrigin(0.5);
+    })
+      .setOrigin(0.5)
+      .setAlpha(alpha);
+    if (sublabel) {
+      this.text(x + width / 2, y + height * 0.76, sublabel, {
+        fontSize: '12px',
+        color: sublabelColor,
+      }).setOrigin(0.5);
+    }
 
     button.setInteractive({ useHandCursor: true });
-    button.on('pointerover', () => button.setFillStyle(selected ? 0x4d9a6e : 0x393c5e, 1));
-    button.on('pointerout', () => button.setFillStyle(fill, 1));
+    button.on('pointerover', () => button.setFillStyle(selected ? 0x4d9a6e : 0x393c5e, dimmed ? 0.6 : 1));
+    button.on('pointerout', () => button.setFillStyle(fill, alpha));
     button.on('pointerdown', onClick);
     return button;
   }

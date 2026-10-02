@@ -1,0 +1,40 @@
+{
+  "variance": {"low": 0.7, "high": 1.3},
+  "entry_stress": 5,
+  "prizes": {"1": 300, "2": 150, "3": 50, "4": 0},
+  "ribbon_scores": {"1": 75, "2": 60, "3": 50, "4": 0},
+  "contests": {
+    "charm": {
+      "stat": "affection",
+      "rivals": [
+        {"id": "nabi", "base": 35},
+        {"id": "cheese", "base": 55},
+        {"id": "boli", "base": 75}
+      ]
+    },
+    "obedience": {
+      "stat": "discipline",
+      "rivals": [
+        {"id": "dubu", "base": 35},
+        {"id": "mukmul", "base": 55},
+        {"id": "gomi", "base": 75}
+      ]
+    },
+    "exploration": {
+      "stat": "curiosity",
+      "rivals": [
+        {"id": "mackerel", "base": 35},
+        {"id": "baduk", "base": 55},
+        {"id": "tori", "base": 75}
+      ]
+    },
+    "grace": {
+      "stat": "refinement",
+      "rivals": [
+        {"id": "samsaek", "base": 35},
+        {"id": "yuri", "base": 55},
+        {"id": "nuri", "base": 75}
+      ]
+    }
+  }
+}

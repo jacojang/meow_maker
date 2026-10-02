@@ -1,6 +1,7 @@
 import pytest
 
 from app.game import CatStats, Ending, compute_score, determine_ending
+from app.game.endings import RULES
 
 DEFAULT = {
     "health": 50,
@@ -45,11 +46,13 @@ def test_neglected_takes_priority_over_delinquent():
 def test_ties_break_toward_the_first_listed_stat():
     given = stats(health=50, affection=50, discipline=10, curiosity=10, refinement=10)
 
-    assert determine_ending(given) is Ending.HEALTHY
+    assert determine_ending(given) is Ending.PAIR_HEALTH_AFFECTION
 
 
 def test_score_at_the_minimum():
-    assert compute_score(stats(health=0, affection=0, discipline=0, curiosity=0, refinement=0)) == 0
+    all_zero = stats(health=0, affection=0, discipline=0, curiosity=0, refinement=0)
+
+    assert compute_score(all_zero) == RULES.balance_bonus
 
 
 def test_score_at_the_maximum():
@@ -67,8 +70,8 @@ def test_score_is_the_doubled_sum_of_the_five_core_stats():
     assert compute_score(given) == (50 + 20 + 10 + 30 + 10) * 2
 
 
-def test_score_ignores_weight_age_and_stress():
+def test_score_ignores_age_and_stress_below_the_threshold_but_not_weight():
     base = stats()
     heavier = CatStats(**{**base.to_dict(), "weight": 90, "age": 50, "stress": 40})
 
-    assert compute_score(heavier) == compute_score(base)
+    assert compute_score(heavier) == compute_score(base) - RULES.overweight_penalty
